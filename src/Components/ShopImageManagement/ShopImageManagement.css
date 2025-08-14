@@ -1,0 +1,170 @@
+/* Professional Business-Style ShopImageManagement Component */
+.shop-image-management {
+  padding: 24px;
+  max-width: 1600px;
+  margin: 0 auto;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background: #f8fafc;
+  min-height: 100vh;
+  color: #334155;
+}
+
+.shop-image-management h1 {
+  color: #1e293b;
+  margin-bottom: 32px;
+  font-size: 2rem;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  border-bottom: 3px solid #3b82f6;
+  padding-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.shop-image-management h1::before {
+  content: '🖼️';
+  font-size: 1.5rem;
+}
+
+h1, h2, h3 {
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.upload-section, .filter-section, .image-type-section {
+  margin-bottom: 40px;
+}
+
+.upload-form, .filter-controls, .edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.upload-form input, .upload-form select, .upload-form button,
+.edit-form input, .edit-form textarea, .edit-buttons button,
+.filter-controls select {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.upload-btn, .edit-buttons button {
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.upload-btn:hover, .edit-buttons button:hover {
+  background-color: #0056b3;
+}
+
+.loading, .no-images {
+  color: #777;
+  font-size: 16px;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.image-card {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform 0.3s ease;
+}
+
+.image-card:hover {
+  transform: scale(1.02);
+}
+
+.image-container {
+  position: relative;
+  overflow: hidden;
+  height: 150px;
+}
+
+.image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hidden-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.image-card.hidden .hidden-overlay {
+  opacity: 1;
+}
+
+.image-info {
+  padding: 10px;
+}
+
+.image-details h4 {
+  margin: 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.image-details p {
+  margin: 5px 0;
+  font-size: 14px;
+  color: #555;
+}
+
+.image-actions {
+  display: flex;
+  justify-content: space-around;
+  padding: 10px;
+}
+
+.edit-btn, .visibility-btn, .delete-btn {
+  border: none;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  border-radius: 5px;
+  padding: 5px 10px;
+}
+
+.edit-btn {
+  background-color: #28a745;
+}
+
+.visibility-btn.hide {
+  background-color: #ffc107;
+}
+
+.visibility-btn.show {
+  background-color: #17a2b8;
+}
+
+.delete-btn {
+  background-color: #dc3545;
+}
+
+.hidden {
+  opacity: 0.7;
+}

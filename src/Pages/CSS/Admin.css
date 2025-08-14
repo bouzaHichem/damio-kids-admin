@@ -1,0 +1,32 @@
+.admin {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f1f5f9;
+}
+
+.admin-content {
+  flex: 1;
+  margin-left: 250px;
+  padding: 24px;
+  transition: margin-left 0.3s ease;
+  overflow-y: auto;
+}
+
+.admin-content.collapsed {
+  margin-left: 80px;
+}
+
+@media(max-width: 800px) {
+  .admin {
+    flex-direction: column;
+  }
+  
+  .admin-content {
+    margin-left: 0;
+    padding: 16px;
+  }
+  
+  .admin-content.collapsed {
+    margin-left: 0;
+  }
+}
