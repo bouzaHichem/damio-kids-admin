@@ -9,6 +9,10 @@ import DeliveryManagement from "../Components/DeliveryManagement/DeliveryManagem
 import CategoryManagement from "../Components/CategoryManagement/CategoryManagement";
 import ShopImageManagement from "../Components/ShopImageManagement/ShopImageManagement";
 import CollectionsManagement from "../Components/CollectionsManagement/CollectionsManagement";
+// New Advanced Components
+import Analytics from "../Components/Analytics/Analytics";
+import InventoryManagement from "../Components/InventoryManagement/InventoryManagement";
+import EmailNotifications from "../Components/EmailNotifications/EmailNotifications";
 
 
 const Admin = () => {
@@ -25,6 +29,10 @@ const Admin = () => {
           <Route path="/categorymanagement" element={<CategoryManagement />} />
           <Route path="/shopimagemanagement" element={<ShopImageManagement />} />
           <Route path="/collectionsmanagement" element={<CollectionsManagement />} />
+          {/* New Advanced Features Routes */}
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/inventory" element={<InventoryManagement />} />
+          <Route path="/email-notifications" element={<EmailNotifications />} />
         </Routes>
       </div>
     </div>

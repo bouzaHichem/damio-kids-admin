@@ -7,49 +7,94 @@ const Sidebar = () => {
   const location = useLocation()
 
   const menuItems = [
+    // Dashboard & Analytics
+    {
+      path: '/analytics',
+      icon: '📊',
+      label: 'Analytics',
+      description: 'Business insights & reports',
+      section: 'dashboard'
+    },
+    
+    // Product Management
     {
       path: '/addproduct',
       icon: '📦',
       label: 'Add Product',
-      description: 'Create new products'
+      description: 'Create new products',
+      section: 'products'
     },
     {
       path: '/listproduct',
       icon: '📋',
       label: 'Product List',
-      description: 'Manage all products'
+      description: 'Manage all products',
+      section: 'products'
     },
+    {
+      path: '/inventory',
+      icon: '📦',
+      label: 'Inventory',
+      description: 'Stock management & alerts',
+      section: 'products'
+    },
+    
+    // Order Management
     {
       path: '/OrderList',
       icon: '🛒',
       label: 'Orders',
-      description: 'View and manage orders'
+      description: 'View and manage orders',
+      section: 'orders'
     },
     {
       path: '/DeliveryManagement',
       icon: '🚚',
       label: 'Delivery',
-      description: 'Manage deliveries'
+      description: 'Manage deliveries',
+      section: 'orders'
     },
+    
+    // Content Management
     {
       path: '/categorymanagement',
       icon: '🏷️',
       label: 'Categories',
-      description: 'Organize product categories'
+      description: 'Organize product categories',
+      section: 'content'
     },
     {
       path: '/shopimagemanagement',
       icon: '🖼️',
       label: 'Shop Images',
-      description: 'Manage shop visuals'
+      description: 'Manage shop visuals',
+      section: 'content'
     },
     {
       path: '/collectionsmanagement',
       icon: '📚',
       label: 'Collections',
-      description: 'Manage product collections'
+      description: 'Manage product collections',
+      section: 'content'
+    },
+    
+    // Communication
+    {
+      path: '/email-notifications',
+      icon: '📧',
+      label: 'Email Notifications',
+      description: 'Email management & templates',
+      section: 'communication'
     }
   ]
+
+  const menuSections = {
+    dashboard: 'DASHBOARD',
+    products: 'PRODUCTS',
+    orders: 'ORDERS',
+    content: 'CONTENT',
+    communication: 'COMMUNICATION'
+  }
 
   return (
     <div className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
