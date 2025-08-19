@@ -21,7 +21,7 @@ api.interceptors.request.use(
     
     if (token) {
       // Add both Authorization header (new format) and auth-token header (backward compatibility)
-      config.headers.Authorization = Bearer ;
+      config.headers.Authorization = `Bearer ${token}`;
       config.headers['auth-token'] = token;
     }
     
