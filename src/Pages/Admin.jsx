@@ -16,11 +16,11 @@ import EmailNotifications from "../Components/EmailNotifications/EmailNotificati
 import AdminSettings from "../Components/AdminSettings/AdminSettings";
 
 
-const Admin = () => {
+const Admin = ({ mobileOpen, onMobileClose }) => {
 
   return (
     <div className="admin">
-      <Sidebar />
+      <Sidebar mobileOpen={mobileOpen} onMobileClose={onMobileClose} />
       <div className="admin-content">
         <Routes>
           <Route path="/addproduct" element={<AddProduct />} />
