@@ -13,6 +13,7 @@ import CollectionsManagement from "../Components/CollectionsManagement/Collectio
 import Analytics from "../Components/Analytics/Analytics";
 import InventoryManagement from "../Components/InventoryManagement/InventoryManagement";
 import EmailNotifications from "../Components/EmailNotifications/EmailNotifications";
+import AdminSettings from "../Components/AdminSettings/AdminSettings";
 
 
 const Admin = () => {
@@ -33,6 +34,7 @@ const Admin = () => {
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/inventory" element={<InventoryManagement />} />
           <Route path="/email-notifications" element={<EmailNotifications />} />
+          <Route path="/settings" element={<AdminSettings />} />
         </Routes>
       </div>
     </div>

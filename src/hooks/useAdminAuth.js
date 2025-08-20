@@ -122,6 +122,19 @@ export const AdminAuthProvider = ({ children }) => {
     return allowedRoles.includes(admin.role);
   };
   
+  // Update admin data locally
+  const updateAdminData = (newAdminData) => {
+    setAdmin(prevAdmin => {
+      const updatedAdmin = {
+        ...prevAdmin,
+        ...newAdminData
+      };
+      // Also update in localStorage
+      adminAuthService.setAdminData(updatedAdmin);
+      return updatedAdmin;
+    });
+  };
+  
   // Clear error
   const clearError = () => {
     setError(null);
@@ -135,6 +148,7 @@ export const AdminAuthProvider = ({ children }) => {
     login,
     logout,
     refreshAdmin,
+    updateAdminData,
     hasPermission,
     hasRole,
     clearError

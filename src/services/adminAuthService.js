@@ -254,6 +254,11 @@ export const adminAuthService = {
     
     const allowedRoles = Array.isArray(roles) ? roles : [roles];
     return allowedRoles.includes(adminData.role);
+  },
+  
+  // Set admin data
+  setAdminData(adminData) {
+    tokenManager.setAdminData(adminData);
   }
 };
 

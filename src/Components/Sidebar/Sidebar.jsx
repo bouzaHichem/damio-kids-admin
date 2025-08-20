@@ -1,10 +1,42 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import './Sidebar.css'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useAdminAuth } from '../../hooks/useAdminAuth'
 
-const Sidebar = () => {
+const Sidebar = ({ mobileOpen, onMobileClose }) => {
   const [collapsed, setCollapsed] = useState(false)
   const location = useLocation()
+  const navigate = useNavigate()
+  const { admin, logout } = useAdminAuth()
+
+  // Close mobile sidebar on route change
+  useEffect(() => {
+    if (mobileOpen && onMobileClose) {
+      onMobileClose()
+    }
+  }, [location.pathname])
+
+  // Handle escape key to close mobile sidebar
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && mobileOpen && onMobileClose) {
+        onMobileClose()
+      }
+    }
+
+    if (mobileOpen) {
+      document.addEventListener('keydown', handleEscape)
+      // Prevent body scroll when mobile sidebar is open
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape)
+      document.body.style.overflow = 'unset'
+    }
+  }, [mobileOpen, onMobileClose])
 
   const menuItems = [
     // Dashboard & Analytics
@@ -85,6 +117,15 @@ const Sidebar = () => {
       label: 'Email Notifications',
       description: 'Email management & templates',
       section: 'communication'
+    },
+    
+    // Settings
+    {
+      path: '/settings',
+      icon: '⚙️',
+      label: 'Settings',
+      description: 'Admin profile & account settings',
+      section: 'settings'
     }
   ]
 
@@ -93,30 +134,78 @@ const Sidebar = () => {
     products: 'PRODUCTS',
     orders: 'ORDERS',
     content: 'CONTENT',
-    communication: 'COMMUNICATION'
+    communication: 'COMMUNICATION',
+    settings: 'SETTINGS'
+  }
+
+  // Handle logout
+  const handleLogout = async () => {
+    try {
+      await logout()
+      navigate('/admin/login')
+    } catch (error) {
+      console.error('Logout error:', error)
+      // Force navigation even if logout fails
+      navigate('/admin/login')
+    }
+  }
+
+  // Handle settings navigation
+  const handleSettings = () => {
+    navigate('/settings')
   }
 
   return (
-    <div className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
-      {/* Sidebar Header */}
-      <div className="sidebar-header">
-        <div className="logo">
-          <span className="logo-icon">👑</span>
-          {!collapsed && (
-            <div className="logo-text">
-              <h3>Damio Kids</h3>
-              <span>Admin Panel</span>
-            </div>
-          )}
+    <>
+      {/* Mobile Overlay */}
+      {mobileOpen && (
+        <div 
+          className={`sidebar-overlay ${mobileOpen ? 'active' : ''}`}
+          onClick={onMobileClose}
+          aria-hidden="true"
+        />
+      )}
+      
+      {/* Sidebar */}
+      <aside 
+        className={`sidebar ${
+          collapsed ? 'collapsed' : ''
+        } ${mobileOpen ? 'mobile-open' : ''}`}
+        role="navigation"
+        aria-label="Main navigation"
+      >
+        {/* Sidebar Header */}
+        <div className="sidebar-header">
+          <div className="logo">
+            <span className="logo-icon" role="img" aria-label="Crown">👑</span>
+            {!collapsed && (
+              <div className="logo-text">
+                <h3>Damio Kids</h3>
+                <span>Admin Panel</span>
+              </div>
+            )}
+          </div>
+          
+          {/* Desktop Collapse Button */}
+          <button 
+            className="collapse-btn"
+            onClick={() => setCollapsed(!collapsed)}
+            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            {collapsed ? '→' : '←'}
+          </button>
+          
+          {/* Mobile Close Button */}
+          <button 
+            className="close-btn"
+            onClick={onMobileClose}
+            title="Close sidebar"
+            aria-label="Close sidebar"
+          >
+            ✕
+          </button>
         </div>
-        <button 
-          className="collapse-btn"
-          onClick={() => setCollapsed(!collapsed)}
-          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        >
-          {collapsed ? '→' : '←'}
-        </button>
-      </div>
 
       {/* Navigation Menu */}
       <nav className="sidebar-nav">
@@ -150,19 +239,44 @@ const Sidebar = () => {
       {!collapsed && (
         <div className="sidebar-footer">
           <div className="user-info">
-            <div className="user-avatar">👨‍💼</div>
+            <div className="user-avatar">
+              {admin?.profileIcon ? (
+                <img src={admin.profileIcon} alt="Profile" />
+              ) : (
+                '👨‍💼'
+              )}
+            </div>
             <div className="user-details">
-              <span className="user-name">Admin User</span>
-              <span className="user-role">Administrator</span>
+              <span className="user-name">
+                {admin ? `${admin.firstName} ${admin.lastName}` : 'Admin User'}
+              </span>
+              <span className="user-role">
+                {admin?.role === 'super_admin' ? 'Super Admin' : 
+                 admin?.role === 'admin' ? 'Administrator' : 
+                 admin?.role === 'moderator' ? 'Moderator' : 'Admin'}
+              </span>
             </div>
           </div>
           <div className="footer-actions">
-            <button className="footer-btn" title="Settings">⚙️</button>
-            <button className="footer-btn" title="Logout">🚪</button>
+            <button 
+              className="footer-btn" 
+              title="Settings"
+              onClick={handleSettings}
+            >
+              ⚙️
+            </button>
+            <button 
+              className="footer-btn" 
+              title="Logout"
+              onClick={handleLogout}
+            >
+              🚪
+            </button>
           </div>
         </div>
       )}
-    </div>
+      </aside>
+    </>
   )
 }
 
