@@ -6,7 +6,7 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://damio-kids-backen
 // Create axios instance for admin auth
 const adminApi = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 15000,
+  timeout: 30000, // Increased timeout to 30 seconds
   withCredentials: true, // Important for cookies
   headers: {
     'Content-Type': 'application/json',
