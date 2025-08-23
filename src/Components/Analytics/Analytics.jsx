@@ -21,7 +21,7 @@ const Analytics = () => {
   const fetchAnalyticsData = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('admin-token');
+      const token = localStorage.getItem('adminToken');
       const headers = {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
@@ -29,7 +29,7 @@ const Analytics = () => {
 
       // Fetch dashboard stats
       const statsResponse = await fetch(
-        `${backend_url}/admin/dashboard/stats?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
+        `${backend_url}/api/admin/dashboard/stats?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
         { headers }
       );
       const statsData = await statsResponse.json();
@@ -39,7 +39,7 @@ const Analytics = () => {
 
       // Fetch sales trends
       const trendsResponse = await fetch(
-        `${backend_url}/admin/analytics/sales-trends?period=${period}&startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
+        `${backend_url}/api/admin/analytics/sales-trends?period=${period}&startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
         { headers }
       );
       const trendsData = await trendsResponse.json();
@@ -49,7 +49,7 @@ const Analytics = () => {
 
       // Fetch customer insights
       const customersResponse = await fetch(
-        `${backend_url}/admin/analytics/customers?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
+        `${backend_url}/api/admin/analytics/customers?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`,
         { headers }
       );
       const customersData = await customersResponse.json();
@@ -59,7 +59,7 @@ const Analytics = () => {
 
       // Fetch inventory insights
       const inventoryResponse = await fetch(
-        `${backend_url}/admin/analytics/inventory`,
+        `${backend_url}/api/admin/analytics/inventory`,
         { headers }
       );
       const inventoryData = await inventoryResponse.json();

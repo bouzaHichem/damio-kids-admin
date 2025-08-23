@@ -56,11 +56,12 @@ const CategoryManagement = () => {
     setError('');
     
     try {
-      const response = await fetch(`${backend_url}/admin/categories`, {
+      const response = await fetch(`${backend_url}/api/admin/categories`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'auth-token': localStorage.getItem('auth-token')
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+          'auth-token': localStorage.getItem('adminToken')
         },
         body: JSON.stringify(categoryForm)
       });
@@ -88,11 +89,12 @@ const CategoryManagement = () => {
     setError('');
     
     try {
-      const response = await fetch(`${backend_url}/admin/categories/${subcategoryForm.parentCategory}/subcategories`, {
+      const response = await fetch(`${backend_url}/api/admin/categories/${subcategoryForm.parentCategory}/subcategories`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'auth-token': localStorage.getItem('auth-token')
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+          'auth-token': localStorage.getItem('adminToken')
         },
         body: JSON.stringify({
           name: subcategoryForm.name,
@@ -123,11 +125,12 @@ const CategoryManagement = () => {
     setError('');
     
     try {
-      const response = await fetch(`${backend_url}/admin/categories/${categoryId}`, {
+      const response = await fetch(`${backend_url}/api/admin/categories/${categoryId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'auth-token': localStorage.getItem('auth-token')
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+          'auth-token': localStorage.getItem('adminToken')
         },
         body: JSON.stringify(updatedData)
       });
@@ -157,10 +160,11 @@ const CategoryManagement = () => {
     setError('');
     
     try {
-      const response = await fetch(`${backend_url}/admin/categories/${categoryId}`, {
+      const response = await fetch(`${backend_url}/api/admin/categories/${categoryId}`, {
         method: 'DELETE',
         headers: {
-          'auth-token': localStorage.getItem('auth-token')
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+          'auth-token': localStorage.getItem('adminToken')
         }
       });
       
@@ -188,10 +192,11 @@ const CategoryManagement = () => {
     setError('');
     
     try {
-      const response = await fetch(`${backend_url}/admin/categories/${categoryId}/subcategories/${subcategoryId}`, {
+      const response = await fetch(`${backend_url}/api/admin/categories/${categoryId}/subcategories/${subcategoryId}`, {
         method: 'DELETE',
         headers: {
-          'auth-token': localStorage.getItem('auth-token')
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+          'auth-token': localStorage.getItem('adminToken')
         }
       });
       

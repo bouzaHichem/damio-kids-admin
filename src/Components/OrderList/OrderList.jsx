@@ -11,9 +11,10 @@ const OrderList = () => {
 
   const fetchOrders = async () => {
     try {
-      const adminToken = "admin-token-123";
-      const res = await axios.get(`${backend_url}/admin/orders`, {
+      const adminToken = localStorage.getItem('adminToken');
+      const res = await axios.get(`${backend_url}/api/admin/orders`, {
         headers: {
+          "Authorization": `Bearer ${adminToken}`,
           "auth-token": adminToken
         }
       });
@@ -28,12 +29,13 @@ const OrderList = () => {
 
   const updateOrderStatus = async (orderId, newStatus) => {
     try {
-      const adminToken = "admin-token-123";
-      await axios.post(`${backend_url}/admin/updateorder`, {
+      const adminToken = localStorage.getItem('adminToken');
+      await axios.post(`${backend_url}/api/admin/updateorder`, {
         orderId,
         status: newStatus,
       }, {
         headers: {
+          "Authorization": `Bearer ${adminToken}`,
           "auth-token": adminToken
         }
       });
