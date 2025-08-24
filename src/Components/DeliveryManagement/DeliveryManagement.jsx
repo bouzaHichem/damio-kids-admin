@@ -45,13 +45,11 @@ const fetchDeliveryRates = async () => {
     }
   };
 
-  const fetchWilayas = async () => {
+const fetchWilayas = async () => {
     try {
       setLoading(true);
-const { data } = await adminApiClient.get('/api/admin/wilayas');
+      const { data } = await adminApiClient.get('/api/admin/wilayas');
       setWilayas(data);
-        setMessage('Failed to fetch wilayas');
-      }
     } catch (error) {
       setMessage('Error fetching wilayas');
       console.error('Error:', error);
@@ -116,17 +114,12 @@ const url = editingWilayaId
         ? `/api/admin/wilayas/${editingWilayaId}`
         : '/api/admin/wilayas';
       
-      await adminApiClient.request({ url, method: editingWilayaId ? 'PUT' : 'POST', data: { name: wilayaFormData.name.trim(), communes: validCommunes } });
+await adminApiClient.request({ url, method: editingWilayaId ? 'PUT' : 'POST', data: { name: wilayaFormData.name.trim(), communes: validCommunes } });
 
-      {
-        setMessage(editingWilayaId ? 'Wilaya updated successfully!' : 'Wilaya added successfully!');
-        setWilayaFormData({ name: '', communes: [''] });
-        setEditingWilayaId(null);
-        fetchWilayas();
-      } else {
-        const errorData = await response.json();
-        setMessage(errorData.message || 'Failed to save wilaya');
-      }
+      setMessage(editingWilayaId ? 'Wilaya updated successfully!' : 'Wilaya added successfully!');
+      setWilayaFormData({ name: '', communes: [''] });
+      setEditingWilayaId(null);
+      fetchWilayas();
     } catch (error) {
       setMessage('Error saving wilaya');
       console.error('Error:', error);
@@ -153,13 +146,9 @@ const url = editingWilayaId
       setLoading(true);
 await adminApiClient.delete(`/api/admin/wilayas/${id}`);
 
-    {
-        setMessage('Wilaya deleted successfully!');
-        fetchWilayas();
-        fetchDeliveryRates(); // Refresh delivery rates as they might be affected
-      } else {
-        setMessage('Failed to delete wilaya');
-      }
+    setMessage('Wilaya deleted successfully!');
+    fetchWilayas();
+    fetchDeliveryRates(); // Refresh delivery rates as they might be affected
     } catch (error) {
       setMessage('Error deleting wilaya');
       console.error('Error:', error);
@@ -203,17 +192,12 @@ const url = editingRateId
         ? `/api/admin/deliveryrates/${editingRateId}`
         : '/api/admin/deliveryrates';
       
-      await adminApiClient.request({ url, method: editingRateId ? 'PUT' : 'POST', data: { ...rateFormData, fee: parseFloat(rateFormData.fee) } });
+await adminApiClient.request({ url, method: editingRateId ? 'PUT' : 'POST', data: { ...rateFormData, fee: parseFloat(rateFormData.fee) } });
 
-      {
-        setMessage(editingRateId ? 'Delivery rate updated successfully!' : 'Delivery rate added successfully!');
-        setRateFormData({ wilaya: '', commune: '', deliveryType: 'home', fee: '' });
-        setEditingRateId(null);
-        fetchDeliveryRates();
-      } else {
-        const errorData = await response.json();
-        setMessage(errorData.message || 'Failed to save delivery rate');
-      }
+      setMessage(editingRateId ? 'Delivery rate updated successfully!' : 'Delivery rate added successfully!');
+      setRateFormData({ wilaya: '', commune: '', deliveryType: 'home', fee: '' });
+      setEditingRateId(null);
+      fetchDeliveryRates();
     } catch (error) {
       setMessage('Error saving delivery rate');
       console.error('Error:', error);
@@ -242,12 +226,8 @@ const url = editingRateId
       setLoading(true);
 await adminApiClient.delete(`/api/admin/deliveryrates/${id}`);
 
-    {
-        setMessage('Delivery rate deleted successfully!');
-        fetchDeliveryRates();
-      } else {
-        setMessage('Failed to delete delivery rate');
-      }
+    setMessage('Delivery rate deleted successfully!');
+    fetchDeliveryRates();
     } catch (error) {
       setMessage('Error deleting delivery rate');
       console.error('Error:', error);

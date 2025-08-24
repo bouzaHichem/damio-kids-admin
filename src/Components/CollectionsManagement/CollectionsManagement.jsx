@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { adminApiClient } from '../../services/adminAuthService';
+import { backend_url } from '../../App';
 import './CollectionsManagement.css';
 
 const CollectionsManagement = () => {

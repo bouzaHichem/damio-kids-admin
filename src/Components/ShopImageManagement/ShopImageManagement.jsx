@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { adminApiClient } from '../../services/adminAuthService';
+import { backend_url } from '../../App';
 import './ShopImageManagement.css';
 
 const ShopImageManagement = () => {
