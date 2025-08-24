@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { backend_url } from '../../App';
+import { adminApiClient } from '../../services/adminAuthService';
 import './ShopImageManagement.css';
 
 const ShopImageManagement = () => {
@@ -21,18 +21,16 @@ const ShopImageManagement = () => {
   const [newReplacementImage, setNewReplacementImage] = useState(null);
   const [draggedItem, setDraggedItem] = useState(null);
 
-  // Set axios base URL and default headers
-  axios.defaults.baseURL = backend_url;
-  axios.defaults.headers.common['auth-token'] = 'admin-token-123';
+// Use centralized admin axios client that auto-attaches Authorization header
 
   useEffect(() => {
     fetchImages();
   }, []);
 
-  const fetchImages = async () => {
+const fetchImages = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/admin/shop-images');
+      const response = await adminApiClient.get('/api/admin/shop-images');
       setImages(response.data.images || []);
     } catch (error) {
       console.error('Error fetching images:', error);
@@ -67,11 +65,11 @@ const ShopImageManagement = () => {
 
     try {
       setLoading(true);
-      const response = await axios.put(`/admin/shop-images/${imageId}/replace`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+const response = await adminApiClient.put(`/api/admin/shop-images/${imageId}/replace`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
       
       if (response.data.success) {
         alert('Image replaced successfully!');
@@ -118,7 +116,7 @@ const ShopImageManagement = () => {
           return img.id;
         });
 
-        await axios.post('/admin/shop-images/reorder', { imageIds: reorderedIds });
+await adminApiClient.post('/api/admin/shop-images/reorder', { imageIds: reorderedIds });
         fetchImages();
       } catch (error) {
         console.error('Error reordering images:', error);
@@ -163,11 +161,11 @@ const ShopImageManagement = () => {
 
     try {
       setLoading(true);
-      const response = await axios.post('/admin/shop-images/upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+const response = await adminApiClient.post('/api/admin/shop-images/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
       
       if (response.data.success) {
         alert('Image uploaded successfully!');
@@ -198,7 +196,7 @@ const ShopImageManagement = () => {
 
     try {
       setLoading(true);
-      const response = await axios.delete(`/admin/shop-images/${imageId}`);
+const response = await adminApiClient.delete(`/api/admin/shop-images/${imageId}`);
       if (response.data.success) {
         alert('Image deleted successfully!');
         fetchImages();
@@ -214,7 +212,7 @@ const ShopImageManagement = () => {
   const handleToggleVisibility = async (imageId) => {
     try {
       setLoading(true);
-      const response = await axios.post(`/admin/shop-images/${imageId}/toggle-visibility`);
+const response = await adminApiClient.post(`/api/admin/shop-images/${imageId}/toggle-visibility`);
       if (response.data.success) {
         fetchImages();
       }
@@ -243,7 +241,7 @@ const ShopImageManagement = () => {
   const saveEdit = async (imageId) => {
     try {
       setLoading(true);
-      const response = await axios.put(`/admin/shop-images/${imageId}`, {
+const response = await adminApiClient.put(`/api/admin/shop-images/${imageId}`, {
         title: editTitle,
         description: editDescription,
         category: editCategory

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './InventoryManagement.css';
-import { backend_url } from '../../App';
+import { adminApiClient } from '../../services/adminAuthService';
 
 const InventoryManagement = () => {
   const [inventoryReport, setInventoryReport] = useState([]);
@@ -25,13 +25,7 @@ const InventoryManagement = () => {
   const fetchInventoryData = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('admin-token');
-      const headers = {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      };
-
-      // Fetch inventory report
+// Fetch inventory report
       const queryParams = new URLSearchParams();
       Object.keys(filters).forEach(key => {
         if (filters[key] && filters[key] !== '') {
@@ -39,31 +33,19 @@ const InventoryManagement = () => {
         }
       });
 
-      const reportResponse = await fetch(
-        `${backend_url}/admin/inventory/report?${queryParams.toString()}`,
-        { headers }
-      );
-      const reportData = await reportResponse.json();
+const { data: reportData } = await adminApiClient.get(`/api/admin/inventory/report?${queryParams.toString()}`);
       if (reportData.success) {
         setInventoryReport(reportData.data);
       }
 
       // Fetch low stock products
-      const lowStockResponse = await fetch(
-        `${backend_url}/admin/inventory/low-stock?threshold=${stockThreshold}`,
-        { headers }
-      );
-      const lowStockData = await lowStockResponse.json();
+const { data: lowStockData } = await adminApiClient.get(`/api/admin/inventory/low-stock?threshold=${stockThreshold}`);
       if (lowStockData.success) {
         setLowStockProducts(lowStockData.data.products);
       }
 
       // Fetch out of stock products
-      const outOfStockResponse = await fetch(
-        `${backend_url}/admin/inventory/out-of-stock`,
-        { headers }
-      );
-      const outOfStockData = await outOfStockResponse.json();
+const { data: outOfStockData } = await adminApiClient.get('/api/admin/inventory/out-of-stock');
       if (outOfStockData.success) {
         setOutOfStockProducts(outOfStockData.data.products);
       }
@@ -77,21 +59,7 @@ const InventoryManagement = () => {
 
   const handleStockUpdate = async (productId, newQuantity, reason = 'manual_adjustment') => {
     try {
-      const token = localStorage.getItem('admin-token');
-      const response = await fetch(`${backend_url}/admin/inventory/update-stock`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          productId,
-          quantity: newQuantity,
-          reason
-        })
-      });
-
-      const data = await response.json();
+const { data } = await adminApiClient.post('/api/admin/inventory/update-stock', { productId, quantity: newQuantity, reason });
       if (data.success) {
         // Refresh inventory data
         fetchInventoryData();
@@ -112,19 +80,7 @@ const InventoryManagement = () => {
     }
 
     try {
-      const token = localStorage.getItem('admin-token');
-      const response = await fetch(`${backend_url}/admin/inventory/bulk-update`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          updates: bulkUpdates
-        })
-      });
-
-      const data = await response.json();
+const { data } = await adminApiClient.post('/api/admin/inventory/bulk-update', { updates: bulkUpdates });
       if (data.success) {
         setBulkUpdates([]);
         fetchInventoryData();

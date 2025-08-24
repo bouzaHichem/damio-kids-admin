@@ -1,7 +1,9 @@
 import axios from 'axios';
 
 // API Configuration
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://damio-kids-backend.onrender.com';
+// Single source of truth for backend base URL. Must be set in Vercel env.
+// In development, fallback to localhost to ease local testing.
+const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || (process.env.NODE_ENV !== 'production' ? 'http://localhost:4000' : undefined);
 
 // Create axios instance for admin auth
 const adminApi = axios.create({

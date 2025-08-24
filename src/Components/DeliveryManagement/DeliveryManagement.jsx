@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './DeliveryManagement.css';
-import { backend_url } from '../../App';
+import { adminApiClient } from '../../services/adminAuthService';
 
 const DeliveryManagement = () => {
   // State for delivery rates
@@ -32,21 +32,11 @@ const DeliveryManagement = () => {
     fetchWilayas();
   }, []);
 
-  const fetchDeliveryRates = async () => {
+const fetchDeliveryRates = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${backend_url}/admin/deliveryrates`, {
-        headers: {
-          'Authorization': 'Bearer admin-token-123'
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setDeliveryRates(data);
-      } else {
-        setMessage('Failed to fetch delivery rates');
-      }
+      const { data } = await adminApiClient.get('/api/admin/deliveryrates');
+      setDeliveryRates(data);
     } catch (error) {
       setMessage('Error fetching delivery rates');
       console.error('Error:', error);
@@ -58,16 +48,8 @@ const DeliveryManagement = () => {
   const fetchWilayas = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${backend_url}/admin/wilayas`, {
-        headers: {
-          'Authorization': 'Bearer admin-token-123'
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setWilayas(data);
-      } else {
+const { data } = await adminApiClient.get('/api/admin/wilayas');
+      setWilayas(data);
         setMessage('Failed to fetch wilayas');
       }
     } catch (error) {
@@ -130,25 +112,13 @@ const DeliveryManagement = () => {
 
     try {
       setLoading(true);
-      const url = editingWilayaId 
-        ? `${backend_url}/admin/wilayas/${editingWilayaId}`
-        : `${backend_url}/admin/wilayas`;
+const url = editingWilayaId 
+        ? `/api/admin/wilayas/${editingWilayaId}`
+        : '/api/admin/wilayas';
       
-      const method = editingWilayaId ? 'PUT' : 'POST';
-      
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer admin-token-123'
-        },
-        body: JSON.stringify({
-          name: wilayaFormData.name.trim(),
-          communes: validCommunes
-        })
-      });
+      await adminApiClient.request({ url, method: editingWilayaId ? 'PUT' : 'POST', data: { name: wilayaFormData.name.trim(), communes: validCommunes } });
 
-      if (response.ok) {
+      {
         setMessage(editingWilayaId ? 'Wilaya updated successfully!' : 'Wilaya added successfully!');
         setWilayaFormData({ name: '', communes: [''] });
         setEditingWilayaId(null);
@@ -181,14 +151,9 @@ const DeliveryManagement = () => {
 
     try {
       setLoading(true);
-      const response = await fetch(`${backend_url}/admin/wilayas/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': 'Bearer admin-token-123'
-        }
-      });
+await adminApiClient.delete(`/api/admin/wilayas/${id}`);
 
-      if (response.ok) {
+    {
         setMessage('Wilaya deleted successfully!');
         fetchWilayas();
         fetchDeliveryRates(); // Refresh delivery rates as they might be affected
@@ -234,25 +199,13 @@ const DeliveryManagement = () => {
 
     try {
       setLoading(true);
-      const url = editingRateId 
-        ? `${backend_url}/admin/deliveryrates/${editingRateId}`
-        : `${backend_url}/admin/deliveryrates`;
+const url = editingRateId 
+        ? `/api/admin/deliveryrates/${editingRateId}`
+        : '/api/admin/deliveryrates';
       
-      const method = editingRateId ? 'PUT' : 'POST';
-      
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer admin-token-123'
-        },
-        body: JSON.stringify({
-          ...rateFormData,
-          fee: parseFloat(rateFormData.fee)
-        })
-      });
+      await adminApiClient.request({ url, method: editingRateId ? 'PUT' : 'POST', data: { ...rateFormData, fee: parseFloat(rateFormData.fee) } });
 
-      if (response.ok) {
+      {
         setMessage(editingRateId ? 'Delivery rate updated successfully!' : 'Delivery rate added successfully!');
         setRateFormData({ wilaya: '', commune: '', deliveryType: 'home', fee: '' });
         setEditingRateId(null);
@@ -287,14 +240,9 @@ const DeliveryManagement = () => {
 
     try {
       setLoading(true);
-      const response = await fetch(`${backend_url}/admin/deliveryrates/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': 'Bearer admin-token-123'
-        }
-      });
+await adminApiClient.delete(`/api/admin/deliveryrates/${id}`);
 
-      if (response.ok) {
+    {
         setMessage('Delivery rate deleted successfully!');
         fetchDeliveryRates();
       } else {

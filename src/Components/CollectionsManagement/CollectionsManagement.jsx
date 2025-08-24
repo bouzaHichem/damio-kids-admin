@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { backend_url } from '../../App';
+import { adminApiClient } from '../../services/adminAuthService';
 import './CollectionsManagement.css';
 
 const CollectionsManagement = () => {
@@ -23,17 +23,9 @@ const CollectionsManagement = () => {
     fetchProducts();
   }, []);
 
-  const fetchCollections = async () => {
+const fetchCollections = async () => {
     try {
-      const authToken = localStorage.getItem('auth-token');
-      console.log('Auth token for collections:', authToken ? 'exists' : 'missing');
-      
-      const response = await fetch(`${backend_url}/admin/collections`, {
-        headers: {
-          'auth-token': authToken || 'admin-token-123'
-        }
-      });
-      const data = await response.json();
+      const { data } = await adminApiClient.get('/api/admin/collections');
       console.log('Collections response:', data);
       
       if (data.success) {
@@ -46,11 +38,10 @@ const CollectionsManagement = () => {
     }
   };
 
-  const fetchProducts = async () => {
+const fetchProducts = async () => {
     try {
-      const response = await fetch(`${backend_url}/allproducts`);
-      const data = await response.json();
-      setProducts(data);
+      const { data } = await adminApiClient.get('/api/admin/products');
+      setProducts(data.data?.products || data.products || []);
     } catch (error) {
       console.error('Error fetching products:', error);
     }
@@ -90,19 +81,9 @@ const CollectionsManagement = () => {
       const authToken = localStorage.getItem('auth-token') || 'admin-token-123';
       console.log('Using auth token for upload:', authToken);
 
-      const response = await fetch(`${backend_url}/admin/collections/upload-banner`, {
-        method: 'POST',
-        headers: {
-          'auth-token': authToken
-        },
-        body: formDataUpload
+const { data } = await adminApiClient.post('/api/admin/collections/upload-banner', formDataUpload, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
       console.log('Upload response:', data);
       
       if (data.success) {
@@ -128,20 +109,15 @@ const CollectionsManagement = () => {
 
     setLoading(true);
     try {
-      const url = editingId 
-        ? `${backend_url}/admin/collections/${editingId}`
-        : `${backend_url}/admin/collections`;
+const url = editingId 
+        ? `/api/admin/collections/${editingId}`
+        : '/api/admin/collections';
       
-      const response = await fetch(url, {
+      const { data } = await adminApiClient.request({
+        url,
         method: editingId ? 'PUT' : 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'auth-token': localStorage.getItem('auth-token') || 'admin-token-123'
-        },
-        body: JSON.stringify(formData)
+        data: formData
       });
-
-      const data = await response.json();
       if (data.success) {
         alert(editingId ? 'Collection updated successfully' : 'Collection created successfully');
         resetForm();
@@ -173,14 +149,7 @@ const CollectionsManagement = () => {
     if (!window.confirm('Are you sure you want to delete this collection?')) return;
 
     try {
-      const response = await fetch(`${backend_url}/admin/collections/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'auth-token': localStorage.getItem('auth-token') || 'admin-token-123'
-        }
-      });
-
-      const data = await response.json();
+const { data } = await adminApiClient.delete(`/api/admin/collections/${id}`);
       if (data.success) {
         alert('Collection deleted successfully');
         fetchCollections();
@@ -195,14 +164,7 @@ const CollectionsManagement = () => {
 
   const toggleVisibility = async (id) => {
     try {
-      const response = await fetch(`${backend_url}/admin/collections/${id}/toggle-visibility`, {
-        method: 'POST',
-        headers: {
-          'auth-token': localStorage.getItem('auth-token') || 'admin-token-123'
-        }
-      });
-
-      const data = await response.json();
+const { data } = await adminApiClient.post(`/api/admin/collections/${id}/toggle-visibility`);
       if (data.success) {
         fetchCollections();
       }

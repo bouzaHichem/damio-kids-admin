@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './EmailNotifications.css';
-import { backend_url } from '../../App';
+import { adminApiClient } from '../../services/adminAuthService';
 
 const EmailNotifications = () => {
   const [notifications, setNotifications] = useState([]);
@@ -37,28 +37,14 @@ const EmailNotifications = () => {
   const fetchEmailData = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('admin-token');
-      const headers = {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      };
-
-      // Fetch email queue/history
-      const notificationsResponse = await fetch(
-        `${backend_url}/admin/email/notifications`,
-        { headers }
-      );
-      const notificationsData = await notificationsResponse.json();
+// Fetch email queue/history
+      const { data: notificationsData } = await adminApiClient.get('/api/admin/email/notifications');
       if (notificationsData.success) {
         setNotifications(notificationsData.data || []);
       }
 
       // Fetch email statistics
-      const statsResponse = await fetch(
-        `${backend_url}/admin/email/stats`,
-        { headers }
-      );
-      const statsData = await statsResponse.json();
+const { data: statsData } = await adminApiClient.get('/api/admin/email/stats');
       if (statsData.success) {
         setEmailStats(statsData.data || {});
       }
@@ -78,18 +64,7 @@ const EmailNotifications = () => {
 
     try {
       setSending(true);
-      const token = localStorage.getItem('admin-token');
-      
-      const response = await fetch(`${backend_url}/admin/email/send-test`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(testEmail)
-      });
-
-      const data = await response.json();
+const { data } = await adminApiClient.post('/api/admin/email/send-test', testEmail);
       if (data.success) {
         alert('Test email sent successfully!');
         setTestEmail({ to: '', type: 'welcome', subject: '', message: '' });
@@ -107,16 +82,7 @@ const EmailNotifications = () => {
 
   const resendNotification = async (notificationId) => {
     try {
-      const token = localStorage.getItem('admin-token');
-      const response = await fetch(`${backend_url}/admin/email/resend/${notificationId}`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      const data = await response.json();
+const { data } = await adminApiClient.post(`/api/admin/email/resend/${notificationId}`);
       if (data.success) {
         alert('Email resent successfully!');
         fetchEmailData();
