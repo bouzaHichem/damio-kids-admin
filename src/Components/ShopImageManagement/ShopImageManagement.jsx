@@ -273,6 +273,13 @@ const response = await adminApiClient.put(`/api/admin/shop-images/${imageId}`, {
     return acc;
   }, {});
 
+  const resolveUrl = (url) => {
+    if (!url) return '';
+    if (/^https?:\/\//i.test(url)) return url;
+    const path = url.startsWith('/') ? url : `/${url}`;
+    return `${backend_url}${path}`;
+  };
+
   return (
     <div className='shop-image-management'>
       <h1>Shop Images Management</h1>
@@ -405,7 +412,7 @@ const response = await adminApiClient.put(`/api/admin/shop-images/${imageId}`, {
                 <div className='drag-handle'>⋮⋮</div>
                 
                 <div className='image-container'>
-                  <img src={`${backend_url}${img.image}`} alt={img.title} />
+                  <img src={resolveUrl(img.image)} alt={img.title} />
                   {!img.visible && <div className='hidden-overlay'>🙈 Hidden</div>}
                   
                   {/* Replace Image Modal */}

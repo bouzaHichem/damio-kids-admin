@@ -4,6 +4,12 @@ import { backend_url } from '../../App';
 import './CollectionsManagement.css';
 
 const CollectionsManagement = () => {
+  const resolveUrl = (url) => {
+    if (!url) return '';
+    if (/^https?:\/\//i.test(url)) return url;
+    const path = url.startsWith('/') ? url : `/${url}`;
+    return `${backend_url}${path}`;
+  };
   const [collections, setCollections] = useState([]);
   const [products, setProducts] = useState([]);
   const [formData, setFormData] = useState({
@@ -270,7 +276,7 @@ const { data } = await adminApiClient.post(`/api/admin/collections/${id}/toggle-
               {uploadingBanner && <span>Uploading...</span>}
               {formData.bannerImage && (
                 <div className="banner-preview">
-                  <img src={`${backend_url}${formData.bannerImage}`} alt="Banner preview" />
+                  <img src={resolveUrl(formData.bannerImage)} alt="Banner preview" />
                 </div>
               )}
             </div>
@@ -286,7 +292,7 @@ const { data } = await adminApiClient.post(`/api/admin/collections/${id}/toggle-
               <div className="selected-products">
                 {selectedProducts.map(product => (
                   <div key={product._id} className="selected-product">
-                    <img src={`${backend_url}${product.image}`} alt={product.name} />
+                  <img src={resolveUrl(product.image)} alt={product.name} />
                     <span>{product.name}</span>
                     <button type="button" onClick={() => removeProduct(product._id)}>×</button>
                   </div>
@@ -321,7 +327,7 @@ const { data } = await adminApiClient.post(`/api/admin/collections/${id}/toggle-
             <div key={collection._id} className="collection-card">
               <div className="collection-banner">
                 {collection.bannerImage ? (
-                  <img src={`${backend_url}${collection.bannerImage}`} alt={collection.name} />
+                  <img src={resolveUrl(collection.bannerImage)} alt={collection.name} />
                 ) : (
                   <div className="no-banner">No Banner</div>
                 )}
