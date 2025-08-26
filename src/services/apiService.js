@@ -17,8 +17,11 @@ const api = axios.create({
 // Request interceptor to add authentication token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('authToken') || localStorage.getItem('auth-token');
-    
+    // Prefer admin token for admin endpoints; fallback to user token
+    const adminToken = localStorage.getItem('adminToken');
+    const userToken = localStorage.getItem('authToken') || localStorage.getItem('auth-token');
+    const token = adminToken || userToken;
+
     if (token) {
       // Add both Authorization header (new format) and auth-token header (backward compatibility)
       config.headers.Authorization = `Bearer ${token}`;
@@ -255,6 +258,21 @@ export const utilityService = {
   async getCategories() {
     const response = await api.get('/categories');
     return response.data;
+  }
+};
+
+// Admin services (compatibility helpers for varying backend payload shapes)
+export const adminService = {
+  async getShopImages(params = {}) {
+    const res = await api.get('/api/admin/shop-images', { params });
+    const images = res?.data?.images ?? res?.data?.data ?? [];
+    return { success: !!res?.data?.success, images, raw: res.data };
+  },
+  
+  async getDeliveryRates(params = {}) {
+    const res = await api.get('/api/admin/deliveryrates', { params });
+    const rates = res?.data?.rates ?? res?.data?.data ?? [];
+    return { success: !!res?.data?.success, rates, raw: res.data };
   }
 };
 

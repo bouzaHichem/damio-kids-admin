@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { adminApiClient } from '../../services/adminAuthService';
+import { adminService } from '../../services/apiService';
 import { backend_url } from '../../App';
 import './ShopImageManagement.css';
 
@@ -30,8 +31,8 @@ const ShopImageManagement = () => {
 const fetchImages = async () => {
     try {
       setLoading(true);
-      const response = await adminApiClient.get('/api/admin/shop-images');
-      setImages(response.data.images || []);
+      const { images: list } = await adminService.getShopImages();
+      setImages(Array.isArray(list) ? list : []);
     } catch (error) {
       console.error('Error fetching images:', error);
       alert('Error fetching images. Please check your connection.');
