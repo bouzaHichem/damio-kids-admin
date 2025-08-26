@@ -17,6 +17,16 @@ export const AdminAuthProvider = ({ children }) => {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
+        // Pre-warm backend to reduce cold-start timeouts
+        const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || (process.env.NODE_ENV === 'production' ? 'https://damio-kids-backend.onrender.com' : 'http://localhost:4000');
+        try {
+          const controller = new AbortController();
+          const id = setTimeout(() => controller.abort(), 20000);
+          // Fire-and-forget warm-up of health endpoint
+          fetch(`${BACKEND_URL}/health`, { signal: controller.signal }).catch(() => {});
+          clearTimeout(id);
+        } catch {}
+
         const token = adminAuthService.getToken();
         if (token) {
           // Verify token with backend

@@ -8,7 +8,7 @@ const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || (process.env.NODE_ENV 
 // Create axios instance for admin auth
 const adminApi = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 30000, // Increased timeout to 30 seconds
+  timeout: 60000, // 60s to tolerate backend cold starts
   withCredentials: true, // Important for cookies
   headers: {
     'Content-Type': 'application/json',

@@ -8,7 +8,7 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://damio-kids-backen
 const api = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true,
-  timeout: 30000, // 30 second timeout
+  timeout: 60000, // bump to 60s to tolerate cold starts on the backend
   headers: {
     'Content-Type': 'application/json',
   }
