@@ -42,6 +42,9 @@ const fetchCollections = async () => {
       }
     } catch (error) {
       console.error('Error fetching collections:', error);
+      const msg = error?.response?.data?.message || error.message || 'Failed to fetch collections';
+      // Surface a user-friendly message once; console already has details
+      alert(msg);
     }
   };
 
@@ -120,10 +123,11 @@ const url = editingId
         ? `/api/admin/collections/${editingId}`
         : '/api/admin/collections';
       
+const payload = { ...formData, order: Number(formData.order) || 0 };
       const { data } = await adminApiClient.request({
         url,
         method: editingId ? 'PUT' : 'POST',
-        data: formData
+        data: payload
       });
       if (data.success) {
         alert(editingId ? 'Collection updated successfully' : 'Collection created successfully');
@@ -134,7 +138,8 @@ const url = editingId
       }
     } catch (error) {
       console.error('Error saving collection:', error);
-      alert('Error saving collection');
+      const msg = error?.response?.data?.message || error.message || 'Error saving collection';
+      alert(msg);
     } finally {
       setLoading(false);
     }
@@ -374,7 +379,7 @@ const { data } = await adminApiClient.post(`/api/admin/collections/${id}/toggle-
                     className={`product-item ${formData.products.includes(product._id) ? 'selected' : ''}`}
                     onClick={() => handleProductSelection(product._id)}
                   >
-                    <img src={`${backend_url}${product.image}`} alt={product.name} />
+                    <img src={resolveUrl(product.image)} alt={product.name} />
                     <div className="product-info">
                       <h4>{product.name}</h4>
                       <p>{product.new_price} د.ج</p>
