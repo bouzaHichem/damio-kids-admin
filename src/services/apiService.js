@@ -240,6 +240,15 @@ export const uploadService = {
     });
     
     return response.data;
+  },
+
+  async uploadCategoryBanner(file) {
+    const formData = new FormData();
+    formData.append('banner', file);
+    const response = await api.post('/api/admin/categories/upload-banner', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return response.data;
   }
 };
 
@@ -273,6 +282,39 @@ export const adminService = {
     const res = await api.get('/api/admin/deliveryrates', { params });
     const rates = res?.data?.rates ?? res?.data?.data ?? [];
     return { success: !!res?.data?.success, rates, raw: res.data };
+  },
+};
+
+// Categories admin service
+export const categoriesAdminService = {
+  async list() {
+    const res = await api.get('/api/admin/categories');
+    const categories = res?.data?.categories ?? res?.data ?? [];
+    return { success: !!res?.data?.success || Array.isArray(res?.data), categories, raw: res.data };
+  },
+  async create(payload) {
+    const res = await api.post('/api/admin/categories', payload);
+    return res.data;
+  },
+  async update(id, payload) {
+    const res = await api.put(`/api/admin/categories/${id}`, payload);
+    return res.data;
+  },
+  async remove(id) {
+    const res = await api.delete(`/api/admin/categories/${id}`);
+    return res.data;
+  },
+  async addSubcategory(categoryId, payload) {
+    const res = await api.post(`/api/admin/categories/${categoryId}/subcategories`, payload);
+    return res.data;
+  },
+  async updateSubcategory(categoryId, subcategoryId, payload) {
+    const res = await api.put(`/api/admin/categories/${categoryId}/subcategories/${subcategoryId}`, payload);
+    return res.data;
+  },
+  async removeSubcategory(categoryId, subcategoryId) {
+    const res = await api.delete(`/api/admin/categories/${categoryId}/subcategories/${subcategoryId}`);
+    return res.data;
   }
 };
 

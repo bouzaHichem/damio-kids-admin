@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { backend_url } from '../../App';
 import './CategoryManagement.css';
+import { categoriesAdminService, uploadService } from '../../services/apiService';
 
 const CategoryManagement = () => {
   const [categories, setCategories] = useState([]);
@@ -12,8 +12,11 @@ const CategoryManagement = () => {
   const [categoryForm, setCategoryForm] = useState({
     name: '',
     description: '',
-    isActive: true
+    isActive: true,
+    bannerImage: ''
   });
+  const [bannerPreview, setBannerPreview] = useState('');
+  const [bannerUploading, setBannerUploading] = useState(false);
   
   const [subcategoryForm, setSubcategoryForm] = useState({
     name: '',
@@ -36,21 +39,11 @@ const CategoryManagement = () => {
   const fetchCategories = async () => {
     setLoading(true);
     try {
-      // Use admin API to ensure proper shape and auth
-      const response = await fetch(`${backend_url}/api/admin/categories`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
-          'auth-token': localStorage.getItem('adminToken')
-        }
-      });
-      const data = await response.json();
-      if (data?.success) {
-        setCategories(data.categories || []);
-      } else if (Array.isArray(data)) {
-        // Fallback if server returns raw array
-        setCategories(data);
+      const res = await categoriesAdminService.list();
+      if (res.success) {
+        setCategories(res.categories || []);
       } else {
-        setError(data?.message || 'Failed to fetch categories');
+        setError(res?.raw?.message || 'Failed to fetch categories');
       }
     } catch (err) {
       setError('Error fetching categories: ' + err.message);
@@ -65,21 +58,12 @@ const CategoryManagement = () => {
     setError('');
     
     try {
-      const response = await fetch(`${backend_url}/api/admin/categories`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
-          'auth-token': localStorage.getItem('adminToken')
-        },
-        body: JSON.stringify(categoryForm)
-      });
-      
-      const data = await response.json();
-      
+      const payload = { name: categoryForm.name, bannerImage: categoryForm.bannerImage || '' };
+      const data = await categoriesAdminService.create(payload);
       if (data.success) {
         setSuccess('Category added successfully!');
-        setCategoryForm({ name: '', description: '', isActive: true });
+        setCategoryForm({ name: '', description: '', isActive: true, bannerImage: '' });
+        setBannerPreview('');
         setShowAddCategory(false);
         fetchCategories();
       } else {
@@ -98,22 +82,7 @@ const CategoryManagement = () => {
     setError('');
     
     try {
-      const response = await fetch(`${backend_url}/api/admin/categories/${subcategoryForm.parentCategory}/subcategories`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
-          'auth-token': localStorage.getItem('adminToken')
-        },
-        body: JSON.stringify({
-          name: subcategoryForm.name,
-          description: subcategoryForm.description,
-          isActive: subcategoryForm.isActive
-        })
-      });
-      
-      const data = await response.json();
-      
+      const data = await categoriesAdminService.addSubcategory(subcategoryForm.parentCategory, { name: subcategoryForm.name });
       if (data.success) {
         setSuccess('Subcategory added successfully!');
         setSubcategoryForm({ name: '', description: '', parentCategory: '', isActive: true });
@@ -134,18 +103,7 @@ const CategoryManagement = () => {
     setError('');
     
     try {
-      const response = await fetch(`${backend_url}/api/admin/categories/${categoryId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
-          'auth-token': localStorage.getItem('adminToken')
-        },
-        body: JSON.stringify(updatedData)
-      });
-      
-      const data = await response.json();
-      
+      const data = await categoriesAdminService.update(categoryId, updatedData);
       if (data.success) {
         setSuccess('Category updated successfully!');
         setEditingCategory(null);
@@ -169,16 +127,7 @@ const CategoryManagement = () => {
     setError('');
     
     try {
-      const response = await fetch(`${backend_url}/api/admin/categories/${categoryId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
-          'auth-token': localStorage.getItem('adminToken')
-        }
-      });
-      
-      const data = await response.json();
-      
+      const data = await categoriesAdminService.remove(categoryId);
       if (data.success) {
         setSuccess('Category deleted successfully!');
         fetchCategories();
@@ -201,16 +150,7 @@ const CategoryManagement = () => {
     setError('');
     
     try {
-      const response = await fetch(`${backend_url}/api/admin/categories/${categoryId}/subcategories/${subcategoryId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
-          'auth-token': localStorage.getItem('adminToken')
-        }
-      });
-      
-      const data = await response.json();
-      
+      const data = await categoriesAdminService.removeSubcategory(categoryId, subcategoryId);
       if (data.success) {
         setSuccess('Subcategory deleted successfully!');
         fetchCategories();
@@ -295,14 +235,43 @@ const CategoryManagement = () => {
                   required
                 />
               </div>
+
               <div className="form-group">
-                <label>Description</label>
-                <textarea
-                  value={categoryForm.description}
-                  onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })}
-                  rows="3"
+                <label>Banner Image</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    setBannerUploading(true);
+                    try {
+                      const res = await uploadService.uploadCategoryBanner(file);
+                      if (res?.success && res?.image_url) {
+                        setCategoryForm({ ...categoryForm, bannerImage: res.image_url });
+                        setBannerPreview(res.image_url);
+                        setSuccess('Banner uploaded');
+                      } else {
+                        setError(res?.message || 'Failed to upload banner');
+                      }
+                    } catch (err) {
+                      setError('Upload error: ' + err.message);
+                    } finally {
+                      setBannerUploading(false);
+                    }
+                  }}
                 />
+                {(bannerUploading || categoryForm.bannerImage || bannerPreview) && (
+                  <div className="banner-preview">
+                    {bannerUploading ? (
+                      <span>Uploading banner...</span>
+                    ) : (
+                      <img src={bannerPreview || categoryForm.bannerImage} alt="Banner preview" />
+                    )}
+                  </div>
+                )}
               </div>
+
               <div className="form-group checkbox-group">
                 <label>
                   <input
@@ -314,8 +283,8 @@ const CategoryManagement = () => {
                 </label>
               </div>
               <div className="modal-actions">
-                <button type="button" onClick={() => setShowAddCategory(false)}>Cancel</button>
-                <button type="submit" disabled={loading}>
+                <button type="button" onClick={() => { setShowAddCategory(false); setBannerPreview(''); }}>Cancel</button>
+                <button type="submit" disabled={loading || bannerUploading}>
                   {loading ? 'Adding...' : 'Add Category'}
                 </button>
               </div>
@@ -404,6 +373,11 @@ const CategoryManagement = () => {
                     ({category.subcategories?.length || 0} subcategories)
                   </span>
                 </h3>
+                {category.bannerImage && (
+                  <div className="category-banner-thumb">
+                    <img src={category.bannerImage} alt={`${category.name} banner`} />
+                  </div>
+                )}
                 {category.description && <p className="category-description">{category.description}</p>}
               </div>
               <div className="category-actions">
@@ -466,6 +440,73 @@ const CategoryManagement = () => {
           </div>
         ))}
       </div>
+      {/* Edit Category Modal */}
+      {!!editingCategory && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h2>Edit Category</h2>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              handleUpdateCategory(editingCategory.id || editingCategory._id, {
+                name: editingCategory.name,
+                bannerImage: editingCategory.bannerImage || ''
+              });
+            }}>
+              <div className="form-group">
+                <label>Category Name *</label>
+                <input
+                  type="text"
+                  value={editingCategory.name || ''}
+                  onChange={(e) => setEditingCategory({ ...editingCategory, name: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Banner Image</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    setBannerUploading(true);
+                    try {
+                      const res = await uploadService.uploadCategoryBanner(file);
+                      if (res?.success && res?.image_url) {
+                        setEditingCategory({ ...editingCategory, bannerImage: res.image_url });
+                        setSuccess('Banner uploaded');
+                      } else {
+                        setError(res?.message || 'Failed to upload banner');
+                      }
+                    } catch (err) {
+                      setError('Upload error: ' + err.message);
+                    } finally {
+                      setBannerUploading(false);
+                    }
+                  }}
+                />
+                {(bannerUploading || editingCategory.bannerImage) && (
+                  <div className="banner-preview">
+                    {bannerUploading ? (
+                      <span>Uploading banner...</span>
+                    ) : (
+                      <img src={editingCategory.bannerImage} alt="Banner preview" />
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="modal-actions">
+                <button type="button" onClick={() => setEditingCategory(null)}>Cancel</button>
+                <button type="submit" disabled={loading || bannerUploading}>
+                  {loading ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
