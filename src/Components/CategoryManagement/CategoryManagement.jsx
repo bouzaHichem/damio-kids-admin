@@ -36,12 +36,21 @@ const CategoryManagement = () => {
   const fetchCategories = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${backend_url}/categories`);
+      // Use admin API to ensure proper shape and auth
+      const response = await fetch(`${backend_url}/api/admin/categories`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+          'auth-token': localStorage.getItem('adminToken')
+        }
+      });
       const data = await response.json();
-      if (data.success) {
-        setCategories(data.categories);
+      if (data?.success) {
+        setCategories(data.categories || []);
+      } else if (Array.isArray(data)) {
+        // Fallback if server returns raw array
+        setCategories(data);
       } else {
-        setError('Failed to fetch categories');
+        setError(data?.message || 'Failed to fetch categories');
       }
     } catch (err) {
       setError('Error fetching categories: ' + err.message);
@@ -329,8 +338,8 @@ const CategoryManagement = () => {
                   required
                 >
                   <option value="">Select Parent Category</option>
-                  {categories.filter(cat => cat.isActive).map(category => (
-                    <option key={category._id} value={category._id}>
+                  {categories.map(category => (
+                    <option key={category._id || category.id} value={category.id || category._id}>
                       {category.name}
                     </option>
                   ))}
@@ -412,7 +421,7 @@ const CategoryManagement = () => {
                 </button>
                 <button
                   className="btn btn-small btn-danger"
-                  onClick={() => handleDeleteCategory(category._id)}
+                  onClick={() => handleDeleteCategory(category.id || category._id)}
                 >
                   Delete
                 </button>
@@ -438,13 +447,13 @@ const CategoryManagement = () => {
                       <div className="subcategory-actions">
                         <button
                           className="btn btn-small btn-secondary"
-                          onClick={() => setEditingSubcategory({ ...subcategory, parentId: category._id })}
+                          onClick={() => setEditingSubcategory({ ...subcategory, parentId: category.id || category._id })}
                         >
                           Edit
                         </button>
                         <button
                           className="btn btn-small btn-danger"
-                          onClick={() => handleDeleteSubcategory(category._id, subcategory._id)}
+                          onClick={() => handleDeleteSubcategory(category.id || category._id, subcategory.id || subcategory._id)}
                         >
                           Delete
                         </button>
