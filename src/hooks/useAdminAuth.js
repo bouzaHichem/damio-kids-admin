@@ -23,8 +23,9 @@ export const AdminAuthProvider = ({ children }) => {
           const controller = new AbortController();
           const id = setTimeout(() => controller.abort(), 20000);
           // Fire-and-forget warm-up of health endpoint
-          fetch(`${BACKEND_URL}/health`, { signal: controller.signal }).catch(() => {});
-          clearTimeout(id);
+          fetch(`${BACKEND_URL}/health`, { signal: controller.signal })
+            .catch(() => {})
+            .finally(() => clearTimeout(id));
         } catch {}
 
         const token = adminAuthService.getToken();

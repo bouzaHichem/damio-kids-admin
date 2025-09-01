@@ -11,7 +11,8 @@ const API_BASE_URL = process.env.REACT_APP_BACKEND_URL ||
 // Create axios instance for admin auth
 const adminApi = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 60000, // 60s to tolerate backend cold starts
+  // Increase timeout to better tolerate Render cold starts in production
+  timeout: process.env.NODE_ENV === 'production' ? 150000 : 60000,
   withCredentials: true, // Important for cookies
   headers: {
     'Content-Type': 'application/json',
@@ -114,6 +115,11 @@ export const adminAuthService = {
   // Login admin
   async login(email, password) {
     try {
+      // Best-effort warm-up in case the backend is asleep
+      try {
+        await fetch(`${API_BASE_URL}/health`, { method: 'GET', mode: 'cors' });
+      } catch {}
+
       const response = await adminApi.post('/api/admin/auth/login', {
         email: email.trim(),
         password
