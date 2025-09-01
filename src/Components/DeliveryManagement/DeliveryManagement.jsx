@@ -46,24 +46,23 @@ const fetchDeliveryRates = async () => {
   };
 
 const fetchWilayas = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      // Prefer admin endpoint; fall back to public endpoint when not available
-      let response = await adminApiClient.get('/api/admin/wilayas');
-      let list = response?.data?.wilayas ?? response?.data?.data ?? response?.data ?? [];
+      let list = [];
 
-      // If the response isn't an array, try the public endpoint as a fallback
-      if (!Array.isArray(list)) {
-        try {
-          const publicRes = await adminApiClient.get('/wilayas');
-          list = publicRes?.data?.wilayas ?? publicRes?.data?.data ?? publicRes?.data ?? [];
-        } catch (fallbackErr) {
-          // Keep original error context if fallback also fails
-          throw response?.data || fallbackErr;
-        }
+      // Try admin endpoint first; it may 404 in some environments
+      try {
+        const adminRes = await adminApiClient.get('/api/admin/wilayas');
+        list = adminRes?.data?.wilayas ?? adminRes?.data?.data ?? adminRes?.data ?? [];
+      } catch (adminErr) {
+        // Fallback to public endpoint used by storefront
+        const publicRes = await adminApiClient.get('/wilayas');
+        list = publicRes?.data?.wilayas ?? publicRes?.data?.data ?? publicRes?.data ?? [];
       }
 
+      // Normalize to array
       setWilayas(Array.isArray(list) ? list : []);
+      setMessage('');
     } catch (error) {
       setMessage('Error fetching wilayas');
       console.error('Error fetching wilayas:', error);
