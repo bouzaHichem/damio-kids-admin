@@ -33,13 +33,16 @@ const DeliveryManagement = () => {
   }, []);
 
 const fetchDeliveryRates = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const { data } = await adminApiClient.get('/api/admin/deliveryrates');
-      setDeliveryRates(data);
+      const res = await adminApiClient.get('/api/admin/deliveryrates');
+      const list = res?.data?.rates ?? res?.data?.data ?? res?.data ?? [];
+      setDeliveryRates(Array.isArray(list) ? list : []);
+      setMessage('');
     } catch (error) {
+      setDeliveryRates([]);
       setMessage('Error fetching delivery rates');
-      console.error('Error:', error);
+      console.error('Error fetching delivery rates:', error);
     } finally {
       setLoading(false);
     }
@@ -488,7 +491,7 @@ await adminApiClient.delete(`/api/admin/deliveryrates/${id}`);
             <h3>Current Delivery Rates</h3>
             {loading && !editingRateId ? (
               <p>Loading delivery rates...</p>
-            ) : deliveryRates.length === 0 ? (
+            ) : (!Array.isArray(deliveryRates) || deliveryRates.length === 0) ? (
               <p>No delivery rates found. Add your first delivery rate above.</p>
             ) : (
               <div className="delivery-rates-table">
@@ -536,7 +539,8 @@ await adminApiClient.delete(`/api/admin/deliveryrates/${id}`);
                   </tbody>
                 </table>
               </div>
-            )}
+            )
+            }
           </div>
         </div>
       )}
