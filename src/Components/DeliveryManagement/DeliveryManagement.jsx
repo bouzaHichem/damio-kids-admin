@@ -63,6 +63,7 @@ const fetchDeliveryRates = async () => {
       const res = await requestWithFallback({
         method: 'get',
         paths: [
+          '/deliveryfee',
           '/api/admin/deliveryrates',
           '/api/admin/delivery-rates',
           '/api/admin/deliveryRates',
@@ -249,9 +250,11 @@ const paths = editingRateId
             `/api/admin/delivery-fees/${editingRateId}`,
             `/api/admin/deliveryFees/${editingRateId}`,
             `/api/admin/shipping-rates/${editingRateId}`,
-            `/api/admin/shippingRates/${editingRateId}`
+            `/api/admin/shippingRates/${editingRateId}`,
+            '/deliveryfee'
           ]
         : [
+            '/deliveryfee',
             '/api/admin/deliveryrates',
             '/api/admin/delivery-rates',
             '/api/admin/deliveryRates',
@@ -301,7 +304,8 @@ await requestWithFallback({ method: 'DELETE', paths: [
       `/api/admin/delivery-fees/${id}`,
       `/api/admin/deliveryFees/${id}`,
       `/api/admin/shipping-rates/${id}`,
-      `/api/admin/shippingRates/${id}`
+      `/api/admin/shippingRates/${id}`,
+      `/deliveryfee/${id}`
     ]});
 
     setMessage('Delivery rate deleted successfully!');
