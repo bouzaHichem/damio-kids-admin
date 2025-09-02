@@ -25,6 +25,7 @@ const DeliveryManagement = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [activeTab, setActiveTab] = useState('wilayas'); // 'wilayas' or 'rates'
+  const [listingSupported, setListingSupported] = useState(true);
 
   // Fetch data on component mount
   useEffect(() => {
@@ -42,8 +43,8 @@ const DeliveryManagement = () => {
       } catch (err) {
         const status = err?.response?.status;
         const msg = err?.response?.data?.message || err?.message || 'Request failed';
-        // Debug which path failed
-        try { console.warn('[delivery] endpoint failed', { method, url, status, msg }); } catch {}
+        // Debug which path failed (only in development)
+        try { if (process.env.NODE_ENV === 'development') console.warn('[delivery] endpoint failed', { method, url, status, msg }); } catch {}
         // Continue on 404/405 (missing route), and also 308/307 permanent/temporary redirects not followed
         if (status === 404 || status === 405 || status === 308 || status === 307) {
           lastError = err;
@@ -77,8 +78,17 @@ const fetchDeliveryRates = async () => {
       setMessage('');
     } catch (error) {
       setDeliveryRates([]);
-      setMessage('Error fetching delivery rates');
-      console.error('Error fetching delivery rates:', error);
+      // If the backend doesn't expose a listing endpoint, switch to calculator-only mode without a scary error.
+      const status = error?.response?.status;
+      if (status === 404) {
+        setListingSupported(false);
+        setMessage('');
+      } else {
+        setMessage('Error fetching delivery rates');
+      }
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error fetching delivery rates:', error);
+      }
     } finally {
       setLoading(false);
     }
@@ -552,9 +562,13 @@ await requestWithFallback({ method: 'DELETE', paths: [
             </form>
           </div>
 
-          <div className="delivery-rates-container">
+      <div className="delivery-rates-container">
             <h3>Current Delivery Rates</h3>
-            {loading && !editingRateId ? (
+            {!listingSupported ? (
+              <div className="info-note">
+                Your backend does not expose a delivery rate listing endpoint. This page is in calculator mode: you can compute a fee via the form above, but rates will not be listed here.
+              </div>
+            ) : loading && !editingRateId ? (
               <p>Loading delivery rates...</p>
             ) : (!Array.isArray(deliveryRates) || deliveryRates.length === 0) ? (
               <p>No delivery rates found. Add your first delivery rate above.</p>
