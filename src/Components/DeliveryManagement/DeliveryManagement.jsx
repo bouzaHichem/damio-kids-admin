@@ -32,10 +32,34 @@ const DeliveryManagement = () => {
     fetchWilayas();
   }, []);
 
+  // Generic helper to try multiple endpoint paths to avoid 404 differences between deployments
+  const requestWithFallback = async ({ method, paths, data, params }) => {
+    let lastError;
+    for (const url of paths) {
+      try {
+        return await adminApiClient.request({ url, method, data, params });
+      } catch (err) {
+        const status = err?.response?.status;
+        // Try next path only on 404/405 (Not Found / Method Not Allowed)
+        if (status === 404 || status === 405) {
+          lastError = err;
+          continue;
+        }
+        // For other errors, rethrow immediately
+        throw err;
+      }
+    }
+    // If none succeeded, throw the last error
+    throw lastError || new Error('All endpoints failed');
+  };
+
 const fetchDeliveryRates = async () => {
     setLoading(true);
     try {
-      const res = await adminApiClient.get('/api/admin/deliveryrates');
+      const res = await requestWithFallback({
+        method: 'get',
+        paths: ['/api/admin/deliveryrates', '/api/admin/delivery-rates', '/deliveryrates']
+      });
       const list = res?.data?.rates ?? res?.data?.data ?? res?.data ?? [];
       setDeliveryRates(Array.isArray(list) ? list : []);
       setMessage('');
@@ -204,11 +228,20 @@ await adminApiClient.delete(`/api/admin/wilayas/${id}`);
 
     try {
       setLoading(true);
-const url = editingRateId 
-        ? `/api/admin/deliveryrates/${editingRateId}`
-        : '/api/admin/deliveryrates';
-      
-await adminApiClient.request({ url, method: editingRateId ? 'PUT' : 'POST', data: { ...rateFormData, fee: parseFloat(rateFormData.fee) } });
+const method = editingRateId ? 'PUT' : 'POST';
+const paths = editingRateId
+        ? [
+            `/api/admin/deliveryrates/${editingRateId}`,
+            `/api/admin/delivery-rates/${editingRateId}`,
+            `/deliveryrates/${editingRateId}`
+          ]
+        : [
+            '/api/admin/deliveryrates',
+            '/api/admin/delivery-rates',
+            '/deliveryrates'
+          ];
+
+await requestWithFallback({ method, paths, data: { ...rateFormData, fee: parseFloat(rateFormData.fee) } });
 
       setMessage(editingRateId ? 'Delivery rate updated successfully!' : 'Delivery rate added successfully!');
       setRateFormData({ wilaya: '', commune: '', deliveryType: 'home', fee: '' });
@@ -240,7 +273,11 @@ await adminApiClient.request({ url, method: editingRateId ? 'PUT' : 'POST', data
 
     try {
       setLoading(true);
-await adminApiClient.delete(`/api/admin/deliveryrates/${id}`);
+await requestWithFallback({ method: 'DELETE', paths: [
+      `/api/admin/deliveryrates/${id}`,
+      `/api/admin/delivery-rates/${id}`,
+      `/deliveryrates/${id}`
+    ]});
 
     setMessage('Delivery rate deleted successfully!');
     fetchDeliveryRates();
