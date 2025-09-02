@@ -63,7 +63,6 @@ const fetchDeliveryRates = async () => {
       const res = await requestWithFallback({
         method: 'get',
         paths: [
-          '/deliveryfee',
           '/api/admin/deliveryrates',
           '/api/admin/delivery-rates',
           '/api/admin/deliveryRates',
