@@ -250,8 +250,26 @@ await adminApiClient.delete(`/api/admin/wilayas/${id}`);
 
     try {
       setLoading(true);
-const method = editingRateId ? 'PUT' : 'POST';
-const paths = editingRateId
+      const method = editingRateId ? 'PUT' : 'POST';
+
+      // If listing is not supported, treat this as a calculator call only
+      if (!listingSupported) {
+        const calcRes = await requestWithFallback({ method: 'POST', paths: ['/deliveryfee', '/delivery-fee', '/deliveryFee'], data: { wilaya: rateFormData.wilaya, commune: rateFormData.commune, deliveryType: rateFormData.deliveryType } });
+        const payload = calcRes?.data || {};
+        const fee = payload.fee ?? payload.amount ?? payload.deliveryFee ?? payload.total ?? null;
+        if (payload.success === false && payload.message) {
+          setMessage(payload.message);
+        } else if (fee != null) {
+          setMessage(`Calculated fee: ${fee} DA`);
+        } else {
+          setMessage('Calculated delivery fee (see console for details).');
+          if (process.env.NODE_ENV === 'development') console.log('Delivery fee response:', payload);
+        }
+        setLoading(false);
+        return;
+      }
+
+      const paths = editingRateId
         ? [
             `/api/admin/deliveryrates/${editingRateId}`,
             `/api/admin/delivery-rates/${editingRateId}`,
@@ -259,11 +277,9 @@ const paths = editingRateId
             `/api/admin/delivery-fees/${editingRateId}`,
             `/api/admin/deliveryFees/${editingRateId}`,
             `/api/admin/shipping-rates/${editingRateId}`,
-            `/api/admin/shippingRates/${editingRateId}`,
-            '/deliveryfee'
+            `/api/admin/shippingRates/${editingRateId}`
           ]
         : [
-            '/deliveryfee',
             '/api/admin/deliveryrates',
             '/api/admin/delivery-rates',
             '/api/admin/deliveryRates',
@@ -273,7 +289,7 @@ const paths = editingRateId
             '/api/admin/shippingRates'
           ];
 
-await requestWithFallback({ method, paths, data: { ...rateFormData, fee: parseFloat(rateFormData.fee) } });
+      await requestWithFallback({ method, paths, data: { ...rateFormData, fee: parseFloat(rateFormData.fee) } });
 
       setMessage(editingRateId ? 'Delivery rate updated successfully!' : 'Delivery rate added successfully!');
       setRateFormData({ wilaya: '', commune: '', deliveryType: 'home', fee: '' });
@@ -551,7 +567,7 @@ await requestWithFallback({ method: 'DELETE', paths: [
               
               <div className="form-buttons">
                 <button type="submit" disabled={loading}>
-                  {loading ? 'Saving...' : (editingRateId ? 'Update Rate' : 'Add Rate')}
+                  {loading ? (listingSupported ? 'Saving...' : 'Calculating...') : (listingSupported ? (editingRateId ? 'Update Rate' : 'Add Rate') : 'Calculate Fee')}
                 </button>
                 {editingRateId && (
                   <button type="button" onClick={handleCancelRate} className="cancel-btn">
