@@ -62,7 +62,15 @@ const fetchDeliveryRates = async () => {
     try {
       const res = await requestWithFallback({
         method: 'get',
-        paths: ['/api/admin/deliveryrates', '/api/admin/delivery-rates', '/deliveryrates']
+        paths: [
+          '/api/admin/deliveryrates',
+          '/api/admin/delivery-rates',
+          '/api/admin/deliveryRates',
+          '/api/admin/delivery-fees',
+          '/api/admin/deliveryFees',
+          '/api/admin/shipping-rates',
+          '/api/admin/shippingRates'
+        ]
       });
       const list = res?.data?.rates ?? res?.data?.data ?? res?.data ?? [];
       setDeliveryRates(Array.isArray(list) ? list : []);
@@ -237,12 +245,20 @@ const paths = editingRateId
         ? [
             `/api/admin/deliveryrates/${editingRateId}`,
             `/api/admin/delivery-rates/${editingRateId}`,
-            `/deliveryrates/${editingRateId}`
+            `/api/admin/deliveryRates/${editingRateId}`,
+            `/api/admin/delivery-fees/${editingRateId}`,
+            `/api/admin/deliveryFees/${editingRateId}`,
+            `/api/admin/shipping-rates/${editingRateId}`,
+            `/api/admin/shippingRates/${editingRateId}`
           ]
         : [
             '/api/admin/deliveryrates',
             '/api/admin/delivery-rates',
-            '/deliveryrates'
+            '/api/admin/deliveryRates',
+            '/api/admin/delivery-fees',
+            '/api/admin/deliveryFees',
+            '/api/admin/shipping-rates',
+            '/api/admin/shippingRates'
           ];
 
 await requestWithFallback({ method, paths, data: { ...rateFormData, fee: parseFloat(rateFormData.fee) } });
@@ -281,7 +297,11 @@ await requestWithFallback({ method, paths, data: { ...rateFormData, fee: parseFl
 await requestWithFallback({ method: 'DELETE', paths: [
       `/api/admin/deliveryrates/${id}`,
       `/api/admin/delivery-rates/${id}`,
-      `/deliveryrates/${id}`
+      `/api/admin/deliveryRates/${id}`,
+      `/api/admin/delivery-fees/${id}`,
+      `/api/admin/deliveryFees/${id}`,
+      `/api/admin/shipping-rates/${id}`,
+      `/api/admin/shippingRates/${id}`
     ]});
 
     setMessage('Delivery rate deleted successfully!');
