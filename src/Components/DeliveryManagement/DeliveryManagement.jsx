@@ -37,19 +37,23 @@ const DeliveryManagement = () => {
     let lastError;
     for (const url of paths) {
       try {
-        return await adminApiClient.request({ url, method, data, params });
+        const res = await adminApiClient.request({ url, method, data, params });
+        return res;
       } catch (err) {
         const status = err?.response?.status;
-        // Try next path only on 404/405 (Not Found / Method Not Allowed)
-        if (status === 404 || status === 405) {
+        const msg = err?.response?.data?.message || err?.message || 'Request failed';
+        // Debug which path failed
+        try { console.warn('[delivery] endpoint failed', { method, url, status, msg }); } catch {}
+        // Continue on 404/405 (missing route), and also 308/307 permanent/temporary redirects not followed
+        if (status === 404 || status === 405 || status === 308 || status === 307) {
           lastError = err;
           continue;
         }
-        // For other errors, rethrow immediately
-        throw err;
+        // Otherwise stop early
+        lastError = err;
+        break;
       }
     }
-    // If none succeeded, throw the last error
     throw lastError || new Error('All endpoints failed');
   };
 
@@ -248,8 +252,9 @@ await requestWithFallback({ method, paths, data: { ...rateFormData, fee: parseFl
       setEditingRateId(null);
       fetchDeliveryRates();
     } catch (error) {
-      setMessage('Error saving delivery rate');
-      console.error('Error:', error);
+      const backendMsg = error?.response?.data?.message || error?.message || 'Unknown error';
+      setMessage(`Error saving delivery rate${backendMsg ? `: ${backendMsg}` : ''}`);
+      console.error('Error saving delivery rate:', error);
     } finally {
       setLoading(false);
     }
