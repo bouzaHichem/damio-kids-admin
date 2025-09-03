@@ -61,31 +61,13 @@ const DeliveryManagement = () => {
 const fetchDeliveryRates = async () => {
     setLoading(true);
     try {
-      const res = await requestWithFallback({
-        method: 'get',
-        paths: [
-          '/api/admin/deliveryrates',
-          '/api/admin/delivery-rates',
-          '/api/admin/deliveryRates',
-          '/api/admin/delivery-fees',
-          '/api/admin/deliveryFees',
-          '/api/admin/shipping-rates',
-          '/api/admin/shippingRates'
-        ]
-      });
+      const res = await adminApiClient.get('/api/admin/deliveryrates');
       const list = res?.data?.rates ?? res?.data?.data ?? res?.data ?? [];
       setDeliveryRates(Array.isArray(list) ? list : []);
       setMessage('');
     } catch (error) {
       setDeliveryRates([]);
-      // If the backend doesn't expose a listing endpoint, switch to calculator-only mode without a scary error.
-      const status = error?.response?.status;
-      if (status === 404) {
-        setListingSupported(false);
-        setMessage('');
-      } else {
-        setMessage('Error fetching delivery rates');
-      }
+      setMessage('Error fetching delivery rates');
       if (process.env.NODE_ENV === 'development') {
         console.error('Error fetching delivery rates:', error);
       }
@@ -243,53 +225,30 @@ await adminApiClient.delete(`/api/admin/wilayas/${id}`);
       return;
     }
 
-    if (isNaN(rateFormData.fee) || parseFloat(rateFormData.fee) < 0) {
+    const numericFee = parseFloat(rateFormData.fee);
+    if (isNaN(numericFee) || numericFee < 0) {
       setMessage('Please enter a valid fee amount');
       return;
     }
 
     try {
       setLoading(true);
-      const method = editingRateId ? 'PUT' : 'POST';
 
-      // If listing is not supported, treat this as a calculator call only
-      if (!listingSupported) {
-        const calcRes = await requestWithFallback({ method: 'POST', paths: ['/deliveryfee', '/delivery-fee', '/deliveryFee'], data: { wilaya: rateFormData.wilaya, commune: rateFormData.commune, deliveryType: rateFormData.deliveryType } });
-        const payload = calcRes?.data || {};
-        const fee = payload.fee ?? payload.amount ?? payload.deliveryFee ?? payload.total ?? null;
-        if (payload.success === false && payload.message) {
-          setMessage(payload.message);
-        } else if (fee != null) {
-          setMessage(`Calculated fee: ${fee} DA`);
-        } else {
-          setMessage('Calculated delivery fee (see console for details).');
-          if (process.env.NODE_ENV === 'development') console.log('Delivery fee response:', payload);
-        }
-        setLoading(false);
-        return;
+      if (editingRateId) {
+        await adminApiClient.put(`/api/admin/deliveryrates/${editingRateId}`, {
+          wilaya: rateFormData.wilaya,
+          commune: rateFormData.commune,
+          deliveryType: rateFormData.deliveryType,
+          fee: numericFee
+        });
+      } else {
+        await adminApiClient.post('/api/admin/deliveryrates', {
+          wilaya: rateFormData.wilaya,
+          commune: rateFormData.commune,
+          deliveryType: rateFormData.deliveryType,
+          fee: numericFee
+        });
       }
-
-      const paths = editingRateId
-        ? [
-            `/api/admin/deliveryrates/${editingRateId}`,
-            `/api/admin/delivery-rates/${editingRateId}`,
-            `/api/admin/deliveryRates/${editingRateId}`,
-            `/api/admin/delivery-fees/${editingRateId}`,
-            `/api/admin/deliveryFees/${editingRateId}`,
-            `/api/admin/shipping-rates/${editingRateId}`,
-            `/api/admin/shippingRates/${editingRateId}`
-          ]
-        : [
-            '/api/admin/deliveryrates',
-            '/api/admin/delivery-rates',
-            '/api/admin/deliveryRates',
-            '/api/admin/delivery-fees',
-            '/api/admin/deliveryFees',
-            '/api/admin/shipping-rates',
-            '/api/admin/shippingRates'
-          ];
-
-      await requestWithFallback({ method, paths, data: { ...rateFormData, fee: parseFloat(rateFormData.fee) } });
 
       setMessage(editingRateId ? 'Delivery rate updated successfully!' : 'Delivery rate added successfully!');
       setRateFormData({ wilaya: '', commune: '', deliveryType: 'home', fee: '' });
@@ -322,19 +281,10 @@ await adminApiClient.delete(`/api/admin/wilayas/${id}`);
 
     try {
       setLoading(true);
-await requestWithFallback({ method: 'DELETE', paths: [
-      `/api/admin/deliveryrates/${id}`,
-      `/api/admin/delivery-rates/${id}`,
-      `/api/admin/deliveryRates/${id}`,
-      `/api/admin/delivery-fees/${id}`,
-      `/api/admin/deliveryFees/${id}`,
-      `/api/admin/shipping-rates/${id}`,
-      `/api/admin/shippingRates/${id}`,
-      `/deliveryfee/${id}`
-    ]});
+      await adminApiClient.delete(`/api/admin/deliveryrates/${id}`);
 
-    setMessage('Delivery rate deleted successfully!');
-    fetchDeliveryRates();
+      setMessage('Delivery rate deleted successfully!');
+      fetchDeliveryRates();
     } catch (error) {
       setMessage('Error deleting delivery rate');
       console.error('Error:', error);
@@ -567,7 +517,7 @@ await requestWithFallback({ method: 'DELETE', paths: [
               
               <div className="form-buttons">
                 <button type="submit" disabled={loading}>
-                  {loading ? (listingSupported ? 'Saving...' : 'Calculating...') : (listingSupported ? (editingRateId ? 'Update Rate' : 'Add Rate') : 'Calculate Fee')}
+                  {loading ? 'Saving...' : (editingRateId ? 'Update Rate' : 'Add Rate')}
                 </button>
                 {editingRateId && (
                   <button type="button" onClick={handleCancelRate} className="cancel-btn">
@@ -580,11 +530,7 @@ await requestWithFallback({ method: 'DELETE', paths: [
 
       <div className="delivery-rates-container">
             <h3>Current Delivery Rates</h3>
-            {!listingSupported ? (
-              <div className="info-note">
-                Your backend does not expose a delivery rate listing endpoint. This page is in calculator mode: you can compute a fee via the form above, but rates will not be listed here.
-              </div>
-            ) : loading && !editingRateId ? (
+            {loading && !editingRateId ? (
               <p>Loading delivery rates...</p>
             ) : (!Array.isArray(deliveryRates) || deliveryRates.length === 0) ? (
               <p>No delivery rates found. Add your first delivery rate above.</p>
