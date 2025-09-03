@@ -355,7 +355,7 @@ const AddProduct = () => {
               >
                 <option value="">Select Subcategory</option>
                 {availableSubcategories.map(subcategory => (
-                  <option key={subcategory._id} value={subcategory._id}>
+                  <option key={subcategory.id} value={subcategory.id}>
                     {subcategory.name}
                   </option>
                 ))}
