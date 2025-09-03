@@ -18,8 +18,10 @@ const AddProduct = () => {
     description: "",
     image: "",
     images: [],
-    category: "",
-    subcategory: "",
+    category: "", // legacy (name)
+    subcategory: "", // legacy (name)
+    categoryId: "", // canonical
+    subcategoryId: "", // canonical (number as string during editing)
     new_price: "",
     old_price: "",
     
@@ -70,11 +72,19 @@ const AddProduct = () => {
     setSelectedCategory(categoryId);
     setSelectedSubcategory('');
     
-    // Update product details
-    setProductDetails({ ...productDetails, category: categoryId, subcategory: '' });
-    
     // Find selected category and set available subcategories
     const category = categories.find(cat => cat._id === categoryId);
+    const categoryName = category?.name || '';
+
+    // Update product details (canonical + legacy name for compatibility)
+    setProductDetails({ 
+      ...productDetails, 
+      categoryId: categoryId, 
+      category: categoryName, 
+      subcategory: '',
+      subcategoryId: ''
+    });
+    
     if (category && category.subcategories) {
       setAvailableSubcategories(category.subcategories);
     } else {
@@ -85,7 +95,12 @@ const AddProduct = () => {
   const handleSubcategoryChange = (e) => {
     const subcategoryId = e.target.value;
     setSelectedSubcategory(subcategoryId);
-    setProductDetails({ ...productDetails, subcategory: subcategoryId });
+    const sub = availableSubcategories.find(s => String(s.id) === String(subcategoryId));
+    setProductDetails({ 
+      ...productDetails, 
+      subcategoryId: subcategoryId, 
+      subcategory: sub?.name || '' 
+    });
   };
 
   // Predefined options
@@ -148,6 +163,18 @@ const AddProduct = () => {
     if (product.dimensions.width) product.dimensions.width = parseFloat(product.dimensions.width);
     if (product.dimensions.height) product.dimensions.height = parseFloat(product.dimensions.height);
 
+    // Canonical category linkage
+    if (selectedCategory) {
+      product.categoryId = selectedCategory;
+      const cat = categories.find(c => c._id === selectedCategory);
+      if (cat) product.category = cat.name; // legacy name for compatibility
+    }
+    if (selectedSubcategory) {
+      product.subcategoryId = parseInt(selectedSubcategory, 10);
+      const sub = availableSubcategories.find(s => String(s.id) === String(selectedSubcategory));
+      if (sub) product.subcategory = sub.name; // legacy name for compatibility
+    }
+
     // Add product to database
     await fetch(`${backend_url}/addproduct`, {
       method: 'POST',
@@ -163,7 +190,7 @@ const AddProduct = () => {
           alert("Product Added Successfully!");
           // Reset form
           setProductDetails({
-            name: "", description: "", image: "", images: [], category: "", subcategory: "",
+            name: "", description: "", image: "", images: [], category: "", subcategory: "", categoryId: "", subcategoryId: "",
             new_price: "", old_price: "", sizes: [], colors: [], ageRange: { min: "", max: "" },
             brand: "", material: "", care_instructions: "", weight: "",
             dimensions: { length: "", width: "", height: "" }, stock_quantity: "",
@@ -221,6 +248,18 @@ const AddProduct = () => {
   return (
     <div className="addproduct">
       <h2 className="addproduct-title">Add New Product</h2>
+      
+      {/* Selection Preview */}
+      <div style={{ marginBottom: '10px', color: '#444' }}>
+        {selectedCategory && (
+          <span>
+            Selected: {(categories.find(c => c._id === selectedCategory)?.name) || 'Category'}
+            {selectedSubcategory && (
+              <> &nbsp;&gt;&nbsp; {(availableSubcategories.find(s => String(s.id) === String(selectedSubcategory))?.name) || ''}</>
+            )}
+          </span>
+        )}
+      </div>
       
       {/* Tab Navigation */}
       <div className="addproduct-tabs">
