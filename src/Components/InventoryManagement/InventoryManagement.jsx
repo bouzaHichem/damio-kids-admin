@@ -25,31 +25,23 @@ const InventoryManagement = () => {
   const fetchInventoryData = async () => {
     try {
       setLoading(true);
-// Fetch inventory report
-      const queryParams = new URLSearchParams();
-      Object.keys(filters).forEach(key => {
-        if (filters[key] && filters[key] !== '') {
-          queryParams.append(key, filters[key]);
-        }
+      // Fetch all products (admin) and compute derived views locally
+      const params = new URLSearchParams();
+      params.set('limit', '1000');
+      // Optional: could map filters.category to a search param if backend supports it.
+      const { data: productsResp } = await adminApiClient.get(`/api/admin/products?${params.toString()}`);
+
+      const products = productsResp?.data?.products || productsResp?.products || [];
+      setInventoryReport(products);
+
+      // Derive low/out-of-stock lists locally
+      const low = products.filter(p => {
+        const q = Number(p?.stock_quantity || 0);
+        return q > 0 && q <= stockThreshold;
       });
-
-const { data: reportData } = await adminApiClient.get(`/api/admin/inventory?${queryParams.toString()}`);
-      if (reportData.success) {
-        setInventoryReport(reportData.data);
-      }
-
-      // Fetch low stock products
-const { data: lowStockData } = await adminApiClient.get(`/api/admin/inventory/low-stock?threshold=${stockThreshold}`);
-      if (lowStockData.success) {
-        setLowStockProducts(lowStockData.data.products);
-      }
-
-      // Fetch out of stock products
-const { data: outOfStockData } = await adminApiClient.get('/api/admin/inventory/out-of-stock');
-      if (outOfStockData.success) {
-        setOutOfStockProducts(outOfStockData.data.products);
-      }
-
+      const out = products.filter(p => Number(p?.stock_quantity || 0) <= 0);
+      setLowStockProducts(low);
+      setOutOfStockProducts(out);
     } catch (error) {
       console.error('Error fetching inventory data:', error);
     } finally {
@@ -59,7 +51,7 @@ const { data: outOfStockData } = await adminApiClient.get('/api/admin/inventory/
 
   const handleStockUpdate = async (productId, newQuantity, reason = 'manual_adjustment') => {
     try {
-const { data } = await adminApiClient.post('/api/admin/inventory/update-stock', { productId, quantity: newQuantity, reason });
+const { data } = await adminApiClient.put(`/api/admin/products/${productId}`, { stock_quantity: newQuantity, reason });
       if (data.success) {
         // Refresh inventory data
         fetchInventoryData();
@@ -80,14 +72,19 @@ const { data } = await adminApiClient.post('/api/admin/inventory/update-stock', 
     }
 
     try {
-const { data } = await adminApiClient.post('/api/admin/inventory/bulk-update', { updates: bulkUpdates });
-      if (data.success) {
-        setBulkUpdates([]);
-        fetchInventoryData();
-        alert(`Bulk update completed! ${data.data.successful} successful, ${data.data.failed} failed.`);
-      } else {
-        alert('Error with bulk update: ' + data.error);
+// Sequentially apply updates via products API
+      let ok = 0, fail = 0;
+      for (const upd of bulkUpdates) {
+        try {
+          await adminApiClient.put(`/api/admin/products/${upd.productId}`, { stock_quantity: upd.quantity, reason: upd.reason });
+          ok++;
+        } catch (_e) {
+          fail++;
+        }
       }
+      setBulkUpdates([]);
+      fetchInventoryData();
+      alert(`Bulk update completed! ${ok} successful, ${fail} failed.`);
     } catch (error) {
       console.error('Error with bulk update:', error);
       alert('Error with bulk update');
@@ -289,10 +286,12 @@ const { data } = await adminApiClient.post('/api/admin/inventory/bulk-update', {
                         <div className="action-buttons">
                           <button 
                             className="btn-update"
-                            onClick={() => {
+onClick={() => {
                               const newQuantity = prompt(`Update stock for ${product.name}:`, product.stock_quantity || 0);
                               if (newQuantity !== null) {
-                                handleStockUpdate(product._id, parseInt(newQuantity));
+                                // Prefer numeric product.id for admin update endpoint
+                                const adminId = product.id ?? product._id;
+                                handleStockUpdate(adminId, parseInt(newQuantity));
                               }
                             }}
                           >
@@ -300,7 +299,7 @@ const { data } = await adminApiClient.post('/api/admin/inventory/bulk-update', {
                           </button>
                           <button 
                             className="btn-bulk-add"
-                            onClick={() => addToBulkUpdate(product._id, product.name, product.stock_quantity || 0)}
+onClick={() => addToBulkUpdate(product.id ?? product._id, product.name, product.stock_quantity || 0)}
                           >
                             📝 Add to Bulk
                           </button>
