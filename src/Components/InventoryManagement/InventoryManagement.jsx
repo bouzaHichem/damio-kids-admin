@@ -329,10 +329,11 @@ onClick={() => addToBulkUpdate(product.id ?? product._id, product.name, product.
                     </div>
                     <button 
                       className="btn-restock"
-                      onClick={() => {
+onClick={() => {
                         const newQuantity = prompt(`Restock ${product.name}:`, 50);
                         if (newQuantity !== null) {
-                          handleStockUpdate(product._id, parseInt(newQuantity), 'restock');
+                          const adminId = product.id ?? product._id;
+                          handleStockUpdate(adminId, parseInt(newQuantity), 'restock');
                         }
                       }}
                     >
@@ -361,10 +362,11 @@ onClick={() => addToBulkUpdate(product.id ?? product._id, product.name, product.
                     </div>
                     <button 
                       className="btn-restock urgent"
-                      onClick={() => {
+onClick={() => {
                         const newQuantity = prompt(`Urgent restock for ${product.name}:`, 50);
                         if (newQuantity !== null) {
-                          handleStockUpdate(product._id, parseInt(newQuantity), 'urgent_restock');
+                          const adminId = product.id ?? product._id;
+                          handleStockUpdate(adminId, parseInt(newQuantity), 'urgent_restock');
                         }
                       }}
                     >
