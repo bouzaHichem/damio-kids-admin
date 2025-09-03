@@ -278,7 +278,7 @@ const { data } = await adminApiClient.put(`/api/admin/products/${productId}`, { 
                           </div>
                         </div>
                       </td>
-                      <td>{product.category}</td>
+                      <td>{product.categoryName || product.category}{product.subcategoryName ? ` > ${product.subcategoryName}` : ''}</td>
                       <td className="stock-quantity">{product.stock_quantity || 0}</td>
                       <td>{getStockStatusBadge(product.stock_quantity || 0)}</td>
                       <td>{new Date(product.date).toLocaleDateString()}</td>

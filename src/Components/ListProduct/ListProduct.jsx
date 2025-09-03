@@ -64,20 +64,23 @@ const ListProduct = () => {
 
     // Filter and search logic
     const filteredProducts = allProducts.filter(product => {
-        const matchesSearch = product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            product.category?.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesCategory = filterCategory === 'all' || product.category === filterCategory;
+        const catName = (product.categoryName || product.category || '').toLowerCase();
+        const subName = (product.subcategoryName || '').toLowerCase();
+        const matchesSearch = (product.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                              catName.includes(searchTerm.toLowerCase()) ||
+                              subName.includes(searchTerm.toLowerCase());
+        const matchesCategory = filterCategory === 'all' || (product.categoryName || product.category) === filterCategory;
         return matchesSearch && matchesCategory;
     });
 
     // Sort logic
     const sortedProducts = [...filteredProducts].sort((a, b) => {
         switch (sortBy) {
-            case 'name': return a.name.localeCompare(b.name);
-            case 'price-low': return a.new_price - b.new_price;
-            case 'price-high': return b.new_price - a.new_price;
-            case 'newest': return new Date(b.date) - new Date(a.date);
-            case 'category': return a.category.localeCompare(b.category);
+            case 'name': return (a.name || '').localeCompare(b.name || '');
+            case 'price-low': return (a.new_price || 0) - (b.new_price || 0);
+            case 'price-high': return (b.new_price || 0) - (a.new_price || 0);
+            case 'newest': return new Date(b.date || 0) - new Date(a.date || 0);
+            case 'category': return (a.categoryName || a.category || '').localeCompare(b.categoryName || b.category || '');
             default: return 0;
         }
     });
@@ -88,7 +91,7 @@ const ListProduct = () => {
     const paginatedProducts = sortedProducts.slice(startIndex, startIndex + itemsPerPage);
 
     // Get unique categories for filter
-    const categories = ['all', ...new Set(allProducts.map(p => p.category).filter(Boolean))];
+    const categories = ['all', ...new Set(allProducts.map(p => p.categoryName || p.category).filter(Boolean))];
 
     const getStockStatus = (product) => {
         const stock = product.stock_quantity || 0;
@@ -115,7 +118,7 @@ const ListProduct = () => {
                         <span className="stat-label" style={{fontSize: '12px', color: 'white', textTransform: 'uppercase', letterSpacing: '0.5px'}}>Available</span>
                     </div>
                     <div className="stat-card" style={{background: 'rgba(255,255,255,0.2)', padding: '16px', borderRadius: '8px', textAlign: 'center', minWidth: '120px'}}>
-                        <span className="stat-number" style={{display: 'block', fontSize: '24px', fontWeight: '700', marginBottom: '4px', color: 'white'}}>{allProducts.filter(p => p.category).length || 0}</span>
+                        <span className="stat-number" style={{display: 'block', fontSize: '24px', fontWeight: '700', marginBottom: '4px', color: 'white'}}>{allProducts.filter(p => p.categoryName || p.category).length || 0}</span>
                         <span className="stat-label" style={{fontSize: '12px', color: 'white', textTransform: 'uppercase', letterSpacing: '0.5px'}}>Categorized</span>
                     </div>
                 </div>
@@ -182,7 +185,7 @@ const ListProduct = () => {
                             <p className="cartitems-product-title">{product.name}</p>
                             <p>{currency}{product.old_price}</p>
                             <p>{currency}{product.new_price}</p>
-                            <p>{product.category}</p>
+                            <p>{(product.categoryName || product.category) + (product.subcategoryName ? ` > ${product.subcategoryName}` : '')}</p>
                             <button 
                                 className="details-toggle-btn" 
                                 onClick={() => toggleExpanded(product.id)}
