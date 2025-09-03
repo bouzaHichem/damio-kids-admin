@@ -33,7 +33,7 @@ const InventoryManagement = () => {
         }
       });
 
-const { data: reportData } = await adminApiClient.get(`/api/admin/inventory/report?${queryParams.toString()}`);
+const { data: reportData } = await adminApiClient.get(`/api/admin/inventory?${queryParams.toString()}`);
       if (reportData.success) {
         setInventoryReport(reportData.data);
       }
