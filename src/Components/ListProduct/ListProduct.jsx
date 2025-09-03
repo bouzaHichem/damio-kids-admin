@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import "./ListProduct.css";
 import cross_icon from '../Assets/cross_icon.png'
 import { backend_url, currency } from "../../App";
+import { getImageUrl } from '../../utils/imageUtils';
 
 const ListProduct = () => {
     const [allProducts, setAllProducts] = useState([]);
@@ -181,7 +182,7 @@ const ListProduct = () => {
                     {paginatedProducts.map((product, index) => (
                     <div key={index}>
                         <div className="listproduct-format-main listproduct-format">
-                            <img className="listproduct-product-icon" src={backend_url + product.image} alt="" />
+                            <img className="listproduct-product-icon" src={getImageUrl(product.image || (product.images && product.images[0]))} alt={product.name || 'product'} onError={(e)=>{e.currentTarget.src='/api/placeholder/80/80'}} />
                             <p className="cartitems-product-title">{product.name}</p>
                             <p>{currency}{product.old_price}</p>
                             <p>{currency}{product.new_price}</p>

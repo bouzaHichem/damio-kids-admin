@@ -268,9 +268,10 @@ const { data } = await adminApiClient.put(`/api/admin/products/${productId}`, { 
                       <td>
                         <div className="product-info">
                           <img 
-                            src={product.image} 
+                            src={require('../../utils/imageUtils').getImageUrl(product.image || (product.images && product.images[0]))}
                             alt={product.name}
                             className="product-thumb"
+                            onError={(e)=>{e.currentTarget.src='/api/placeholder/80/80'}}
                           />
                           <div>
                             <div className="product-name">{product.name}</div>
