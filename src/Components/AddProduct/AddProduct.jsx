@@ -47,7 +47,11 @@ const AddProduct = () => {
     // Product Status
     status: "active",
     featured: false,
-    on_sale: false
+    on_sale: false,
+    // New homepage flags
+    isFeatured: false,
+    isPromo: false,
+    isBestSelling: false
   });
 
   // Load categories on component mount
@@ -195,7 +199,7 @@ const AddProduct = () => {
             brand: "", material: "", care_instructions: "", weight: "",
             dimensions: { length: "", width: "", height: "" }, stock_quantity: "",
             sku: "", tags: [], meta_title: "", meta_description: "",
-            status: "active", featured: false, on_sale: false
+            status: "active", featured: false, on_sale: false, isFeatured: false, isPromo: false, isBestSelling: false
           });
           setImage(false);
           setAdditionalImages([]);
@@ -286,6 +290,12 @@ const AddProduct = () => {
           onClick={() => setActiveTab('seo')}
         >
           SEO & Status
+        </button>
+        <button
+          className={`tab-btn ${activeTab === 'flags' ? 'active' : ''}`}
+          onClick={() => setActiveTab('flags')}
+        >
+          Homepage Flags
         </button>
       </div>
 
@@ -682,10 +692,36 @@ const AddProduct = () => {
               <span>On Sale</span>
             </label>
           </div>
+      </div>
+      )}
+
+      {/* Homepage Flags Tab */}
+      {activeTab === 'flags' && (
+        <div className="tab-content">
+          <div className="addproduct-row">
+            <div className="addproduct-itemfield">
+              <label>
+                <input type="checkbox" name="isFeatured" checked={productDetails.isFeatured} onChange={changeHandler} />
+                <span style={{ marginLeft: 8 }}>Featured (Homepage)</span>
+              </label>
+            </div>
+            <div className="addproduct-itemfield">
+              <label>
+                <input type="checkbox" name="isPromo" checked={productDetails.isPromo} onChange={changeHandler} />
+                <span style={{ marginLeft: 8 }}>Promo (On Sale)</span>
+              </label>
+            </div>
+            <div className="addproduct-itemfield">
+              <label>
+                <input type="checkbox" name="isBestSelling" checked={productDetails.isBestSelling} onChange={changeHandler} />
+                <span style={{ marginLeft: 8 }}>Best-Selling</span>
+              </label>
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Action Buttons */}
+      {/* Submit Button */}
       <div className="addproduct-actions">
         <button className="addproduct-btn-secondary" onClick={() => {
           if(window.confirm('Are you sure you want to reset the form?')) {

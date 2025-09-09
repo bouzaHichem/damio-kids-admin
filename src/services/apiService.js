@@ -286,6 +286,15 @@ export const adminService = {
   },
 };
 
+// Products admin service
+export const productsAdminService = {
+  async updateFlags(id, flags) {
+    // id can be numeric product.id or Mongo _id; backend supports both
+    const res = await api.put(`/api/admin/products/${id}`, flags);
+    return res.data;
+  }
+};
+
 // Categories admin service
 export const categoriesAdminService = {
   async list() {

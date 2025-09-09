@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import "./ListProduct.css";
 import cross_icon from '../Assets/cross_icon.png'
 import { backend_url, currency } from "../../App";
+import { productsAdminService } from '../../services/apiService';
 import { getImageUrl } from '../../utils/imageUtils';
 
 const ListProduct = () => {
@@ -248,8 +249,19 @@ const ListProduct = () => {
                                     <div className="details-section">
                                         <h3>Status & Dates</h3>
                                         <p><strong>Status:</strong> {product.status || 'Unknown'}</p>
-                                        <p><strong>Featured:</strong> {product.featured ? 'Yes' : 'No'}</p>
+                                        <p><strong>Featured (legacy):</strong> {product.featured ? 'Yes' : 'No'}</p>
+                                        <p><strong>isFeatured:</strong> {product.isFeatured ? 'Yes' : 'No'}</p>
+                                        <p><strong>isPromo:</strong> {product.isPromo ? 'Yes' : 'No'}</p>
+                                        <p><strong>isBestSelling:</strong> {product.isBestSelling ? 'Yes' : 'No'}</p>
                                         <p><strong>Created:</strong> {product.date ? new Date(product.date).toLocaleDateString() : 'Unknown'}</p>
+                                    </div>
+                                    <div className="details-section">
+                                        <h3>Homepage Flags</h3>
+                                        <div style={{display:'flex', gap:'10px', flexWrap:'wrap'}}>
+                                          <button className="pagination-btn" onClick={async ()=>{ await productsAdminService.updateFlags(product._id || product.id, { isFeatured: !product.isFeatured }); fetchInfo(); }}>Toggle Featured</button>
+                                          <button className="pagination-btn" onClick={async ()=>{ await productsAdminService.updateFlags(product._id || product.id, { isPromo: !product.isPromo }); fetchInfo(); }}>Toggle Promo</button>
+                                          <button className="pagination-btn" onClick={async ()=>{ await productsAdminService.updateFlags(product._id || product.id, { isBestSelling: !product.isBestSelling }); fetchInfo(); }}>Toggle Best-Selling</button>
+                                        </div>
                                     </div>
                                 </div>
                                 
