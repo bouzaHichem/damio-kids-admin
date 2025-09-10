@@ -2,6 +2,16 @@ import React, { useState, useEffect } from 'react';
 import './EmailNotifications.css';
 import { adminApiClient } from '../../services/adminAuthService';
 
+// Normalize various API payload shapes to an array
+const toArray = (payload) => {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.notifications)) return payload.notifications;
+  if (Array.isArray(payload?.items)) return payload.items;
+  if (Array.isArray(payload?.queue)) return payload.queue;
+  return [];
+};
+
 const EmailNotifications = () => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -37,20 +47,33 @@ const EmailNotifications = () => {
   const fetchEmailData = async () => {
     try {
       setLoading(true);
-// Fetch email queue/history
+      // Fetch email queue/history
       const { data: notificationsData } = await adminApiClient.get('/api/admin/email/notifications');
-      if (notificationsData.success) {
-        setNotifications(notificationsData.data || []);
+      if (notificationsData?.success !== false) {
+        // Accept various shapes; default to []
+        const list = toArray(notificationsData?.data ?? notificationsData);
+        setNotifications(list);
+      } else {
+        setNotifications([]);
       }
 
       // Fetch email statistics
-const { data: statsData } = await adminApiClient.get('/api/admin/email/stats');
-      if (statsData.success) {
-        setEmailStats(statsData.data || {});
+      const { data: statsData } = await adminApiClient.get('/api/admin/email/stats');
+      if (statsData?.success !== false) {
+        const stats = (statsData?.data && typeof statsData.data === 'object') ? statsData.data : (typeof statsData === 'object' ? statsData : {});
+        setEmailStats({
+          sent: Number(stats.sent) || 0,
+          pending: Number(stats.pending) || 0,
+          failed: Number(stats.failed) || 0,
+          today: Number(stats.today) || 0,
+          total: Number(stats.total) || 0
+        });
       }
 
     } catch (error) {
       console.error('Error fetching email data:', error);
+      // Keep UI stable on error
+      setNotifications([]);
     } finally {
       setLoading(false);
     }
@@ -223,7 +246,7 @@ const { data } = await adminApiClient.post(`/api/admin/email/resend/${notificati
             </div>
 
             <div className="email-list">
-              {notifications.length === 0 ? (
+              {(!Array.isArray(notifications) || notifications.length === 0) ? (
                 <div className="no-emails">
                   <p>📭 No email notifications found</p>
                   <p>Email notifications will appear here once sent</p>
@@ -242,7 +265,7 @@ const { data } = await adminApiClient.post(`/api/admin/email/resend/${notificati
                       </tr>
                     </thead>
                     <tbody>
-                      {notifications.map((notification) => (
+                      {(Array.isArray(notifications) ? notifications : []).map((notification) => (
                         <tr key={notification._id}>
                           <td>
                             <div className="recipient-info">
