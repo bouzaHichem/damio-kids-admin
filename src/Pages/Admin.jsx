@@ -23,6 +23,9 @@ const Admin = ({ mobileOpen, onMobileClose }) => {
       <Sidebar mobileOpen={mobileOpen} onMobileClose={onMobileClose} />
       <div className="admin-content">
         <Routes>
+          {/* Default: redirect root to Analytics */}
+          <Route path="/" element={<Analytics />} />
+          
           <Route path="/addproduct" element={<AddProduct />} />
           <Route path="/listproduct" element={<ListProduct />} />
           <Route path="/OrderList" element={<OrderList />} />

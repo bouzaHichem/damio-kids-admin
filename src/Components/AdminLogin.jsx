@@ -19,7 +19,8 @@ const AdminLogin = () => {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      const from = location.state?.from?.pathname || '/admin/dashboard';
+      // Default to Analytics dashboard when there's no prior location
+      const from = location.state?.from?.pathname || '/analytics';
       navigate(from, { replace: true });
     }
   }, [isAuthenticated, navigate, location.state?.from]);
