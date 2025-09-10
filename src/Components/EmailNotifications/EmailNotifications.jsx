@@ -40,6 +40,114 @@ const EmailNotifications = () => {
     { value: 'custom', label: 'Custom Email', template: 'Custom Message' }
   ];
 
+  // Preset subjects and simple HTML bodies for templates (fallback when server templates are unavailable)
+  const templatePresets = {
+    welcome: {
+      subject: 'Welcome to Damio Kids, {{customerName}}! 🎉',
+      html: `
+        <div style="font-family:Arial,sans-serif;line-height:1.6;color:#333">
+          <h2>Welcome to Damio Kids, {{customerName}}!</h2>
+          <p>We are thrilled to have you. Explore our latest collections and enjoy exclusive offers.</p>
+          <p>Happy shopping! 💛</p>
+        </div>`
+    },
+    order_confirmation: {
+      subject: 'Order #{{orderId}} confirmed ✅',
+      html: `
+        <div style="font-family:Arial,sans-serif;line-height:1.6;color:#333">
+          <h2>Thanks for your purchase, {{customerName}}!</h2>
+          <p>Your order <strong>#{{orderId}}</strong> has been confirmed.</p>
+          <p>Total: <strong>{{total}}</strong> | Placed on: {{orderDate}}</p>
+        </div>`
+    },
+    order_status: {
+      subject: 'Your order #{{orderId}} status is now {{status}}',
+      html: `
+        <div style="font-family:Arial,sans-serif;line-height:1.6;color:#333">
+          <h2>Order Update</h2>
+          <p>Your order <strong>#{{orderId}}</strong> status changed to <strong>{{status}}</strong>.</p>
+        </div>`
+    },
+    low_stock: {
+      subject: 'Low stock alert: {{productName}}',
+      html: `
+        <div style="font-family:Arial,sans-serif;line-height:1.6;color:#333">
+          <h2>Low Stock Alert</h2>
+          <p>The product <strong>{{productName}}</strong> is running low ({{quantity}} left).</p>
+        </div>`
+    },
+    password_reset: {
+      subject: 'Reset your Damio Kids password',
+      html: `
+        <div style="font-family:Arial,sans-serif;line-height:1.6;color:#333">
+          <h2>Password Reset</h2>
+          <p>Click the link below to reset your password:</p>
+          <p><a href="{{resetLink}}">Reset Password</a></p>
+        </div>`
+    },
+    newsletter: {
+      subject: 'Damio Kids — Latest News & Offers',
+      html: `
+        <div style="font-family:Arial,sans-serif;line-height:1.6;color:#333">
+          <h2>Newsletter</h2>
+          <p>{{content}}</p>
+        </div>`
+    },
+    custom: {
+      subject: '{{subject}}',
+      html: `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#333">{{html}}</div>`
+    }
+  };
+
+  // Modal state for preview/edit
+  const [preview, setPreview] = useState({ open: false, html: '', subject: '' });
+  const [editor, setEditor] = useState({ open: false, type: '', subject: '', html: '', saving: false });
+
+  const openPreview = async (type) => {
+    // Try server preview; if not available, use preset
+    try {
+      const { data } = await adminApiClient.get(`/api/admin/email/templates/${type}/preview`).catch(() => ({ data: null }));
+      const subject = data?.data?.subject || templatePresets[type]?.subject || 'Preview';
+      const html = data?.data?.html || templatePresets[type]?.html || '<p>No preview available</p>';
+      setPreview({ open: true, html, subject });
+    } catch (e) {
+      setPreview({ open: true, html: templatePresets[type]?.html || '<p>No preview available</p>', subject: templatePresets[type]?.subject || 'Preview' });
+    }
+  };
+
+  const openEditor = async (type) => {
+    // Load existing server template; fallback to preset
+    try {
+      const { data } = await adminApiClient.get(`/api/admin/email/templates/${type}`).catch(() => ({ data: null }));
+      const subject = data?.data?.subject || templatePresets[type]?.subject || '';
+      const html = data?.data?.html || templatePresets[type]?.html || '';
+      setEditor({ open: true, type, subject, html, saving: false });
+    } catch (e) {
+      const preset = templatePresets[type] || { subject: '', html: '' };
+      setEditor({ open: true, type, subject: preset.subject, html: preset.html, saving: false });
+    }
+  };
+
+  const saveTemplate = async () => {
+    if (!editor.type) return;
+    setEditor((s) => ({ ...s, saving: true }));
+    try {
+      const payload = { subject: editor.subject, html: editor.html };
+      const { data } = await adminApiClient.put(`/api/admin/email/templates/${editor.type}`, payload);
+      if (data?.success) {
+        alert('Template saved successfully');
+        setEditor((s) => ({ ...s, open: false, saving: false }));
+      } else {
+        alert(data?.error || 'Server did not accept template update. Make sure backend supports templates API.');
+        setEditor((s) => ({ ...s, saving: false }));
+      }
+    } catch (error) {
+      console.error('Save template error:', error);
+      alert('Saving failed. Backend may not support template editing yet.');
+      setEditor((s) => ({ ...s, saving: false }));
+    }
+  };
+
   useEffect(() => {
     fetchEmailData();
   }, []);
@@ -413,13 +521,13 @@ const { data } = await adminApiClient.post(`/api/admin/email/resend/${notificati
                   <div className="template-actions">
                     <button 
                       className="btn-preview"
-                      onClick={() => {/* TODO: Preview template */}}
+                      onClick={() => openPreview(template.value)}
                     >
                       👁️ Preview
                     </button>
                     <button 
                       className="btn-edit"
-                      onClick={() => {/* TODO: Edit template */}}
+                      onClick={() => openEditor(template.value)}
                     >
                       ✏️ Edit
                     </button>
@@ -430,6 +538,48 @@ const { data } = await adminApiClient.post(`/api/admin/email/resend/${notificati
           </div>
         )}
       </div>
+
+      {/* Preview Modal */}
+      {preview.open && (
+        <div className="modal-overlay" onClick={() => setPreview({ open: false, html: '', subject: '' })}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Preview: {preview.subject}</h3>
+              <button className="modal-close" onClick={() => setPreview({ open: false, html: '', subject: '' })}>✖</button>
+            </div>
+            <div className="modal-body" style={{background:'#fff',border:'1px solid #eee',padding:10,borderRadius:6,maxHeight:'60vh',overflow:'auto'}}>
+              <iframe title="email-preview" style={{width:'100%',height:'60vh',border:'none',background:'#fff'}} srcDoc={`<!doctype html><html><head><meta charset='utf-8'></head><body>${preview.html}</body></html>`} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {editor.open && (
+        <div className="modal-overlay" onClick={() => setEditor({ open:false, type:'', subject:'', html:'', saving:false })}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Edit Template: {emailTypes.find(t=>t.value===editor.type)?.label || editor.type}</h3>
+              <button className="modal-close" onClick={() => setEditor({ open:false, type:'', subject:'', html:'', saving:false })}>✖</button>
+            </div>
+            <div className="modal-body">
+              <div className="form-group">
+                <label>Subject</label>
+                <input type="text" value={editor.subject} onChange={(e)=>setEditor(s=>({...s, subject:e.target.value}))} />
+              </div>
+              <div className="form-group">
+                <label>HTML</label>
+                <textarea rows="10" value={editor.html} onChange={(e)=>setEditor(s=>({...s, html:e.target.value}))}></textarea>
+              </div>
+              <p style={{fontSize:12,color:'#666'}}>Available placeholders may include: {{'{{customerName}}'}}, {{'{{orderId}}'}}, {{'{{status}}'}}, {{'{{total}}'}}. These are replaced by the backend when sending.</p>
+            </div>
+            <div className="modal-footer" style={{display:'flex',gap:10,justifyContent:'flex-end'}}>
+              <button className="btn-clear" onClick={()=>openPreview(editor.type)}>Preview</button>
+              <button className="btn-send-test" disabled={editor.saving} onClick={saveTemplate}>{editor.saving ? 'Saving...' : 'Save Template'}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
