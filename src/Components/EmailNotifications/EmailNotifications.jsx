@@ -571,7 +571,9 @@ const { data } = await adminApiClient.post(`/api/admin/email/resend/${notificati
                 <label>HTML</label>
                 <textarea rows="10" value={editor.html} onChange={(e)=>setEditor(s=>({...s, html:e.target.value}))}></textarea>
               </div>
-              <p style={{fontSize:12,color:'#666'}}>Available placeholders may include: {{'{{customerName}}'}}, {{'{{orderId}}'}}, {{'{{status}}'}}, {{'{{total}}'}}. These are replaced by the backend when sending.</p>
+              <p style={{fontSize:12,color:'#666'}}>
+                Available placeholders may include: {'{{customerName}}'}, {'{{orderId}}'}, {'{{status}}'}, {'{{total}}'}. These are replaced by the backend when sending.
+              </p>
             </div>
             <div className="modal-footer" style={{display:'flex',gap:10,justifyContent:'flex-end'}}>
               <button className="btn-clear" onClick={()=>openPreview(editor.type)}>Preview</button>
