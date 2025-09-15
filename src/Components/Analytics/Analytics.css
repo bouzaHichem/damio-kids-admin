@@ -1,3 +1,18 @@
+/* Quick refresh button styles */
+.analytics-controls { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+.analytics-controls .actions { margin-left: auto; }
+.refresh-btn {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #fff;
+  border: 0;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(37,99,235,.25);
+}
+.refresh-btn:disabled { opacity: .7; cursor: not-allowed; }
+
 .analytics-container {
   padding: 20px;
   background: #f8f9fa;

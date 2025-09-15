@@ -9,6 +9,7 @@ const Analytics = () => {
   const [customerInsights, setCustomerInsights] = useState(null);
   const [inventoryInsights, setInventoryInsights] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [dateRange, setDateRange] = useState({
     startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     endDate: new Date().toISOString().split('T')[0]
@@ -18,6 +19,15 @@ const Analytics = () => {
   useEffect(() => {
     fetchAnalyticsData();
   }, [dateRange, period]);
+
+  const refreshNow = async () => {
+    try {
+      setRefreshing(true);
+      await fetchAnalyticsData();
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const live = useMetrics();
 
@@ -121,6 +131,12 @@ const Analytics = () => {
               <option value="weekly">Weekly</option>
               <option value="monthly">Monthly</option>
             </select>
+          </div>
+
+          <div className="actions">
+            <button className="refresh-btn" onClick={refreshNow} disabled={loading || refreshing}>
+              {refreshing ? 'Refreshing…' : 'Refresh Trends'}
+            </button>
           </div>
         </div>
       </div>
