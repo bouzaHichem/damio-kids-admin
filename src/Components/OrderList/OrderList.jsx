@@ -174,7 +174,43 @@ const OrderList = () => {
                     <div className="products-list">
                       {order.items.map((item, idx) => (
                         <div key={idx} className="product-item">
-                          <span className="product-name">{item.name}</span>
+                          <span className="product-name">
+                            {item.name}
+                            {item.variant && (
+                              <span style={{ marginLeft: 8, display: 'inline-flex', gap: 6, flexWrap: 'wrap' }}>
+                                {item.variant.size && (
+                                  <span style={{
+                                    padding: '2px 8px',
+                                    borderRadius: 9999,
+                                    background: '#eef2ff',
+                                    border: '1px solid #e0e7ff',
+                                    fontSize: 12,
+                                    color: '#4338ca'
+                                  }}>Size: {item.variant.size}</span>
+                                )}
+                                {item.variant.color && (
+                                  <span style={{
+                                    padding: '2px 8px',
+                                    borderRadius: 9999,
+                                    background: '#fdf2f8',
+                                    border: '1px solid #fce7f3',
+                                    fontSize: 12,
+                                    color: '#be185d'
+                                  }}>Color: {item.variant.color}</span>
+                                )}
+                                {item.variant.age && (
+                                  <span style={{
+                                    padding: '2px 8px',
+                                    borderRadius: 9999,
+                                    background: '#ecfeff',
+                                    border: '1px solid #cffafe',
+                                    fontSize: 12,
+                                    color: '#0e7490'
+                                  }}>Age: {item.variant.age}</span>
+                                )}
+                              </span>
+                            )}
+                          </span>
                           <span className="product-quantity">×{item.quantity}</span>
                         </div>
                       ))}
