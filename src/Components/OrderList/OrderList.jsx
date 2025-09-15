@@ -59,6 +59,79 @@ const OrderList = () => {
 
   const filteredOrders = filter === "All" ? orders : orders.filter(order => order.status === filter);
 
+  const downloadCSV = () => {
+    const rows = [];
+    // Header
+    rows.push([
+      'Order ID',
+      'Date',
+      'Status',
+      'Customer',
+      'Phone',
+      'Wilaya',
+      'Commune',
+      'Delivery Type',
+      'Delivery Address',
+      'Product Name',
+      'Variant Size',
+      'Variant Color',
+      'Variant Age',
+      'Quantity',
+      'Unit Price',
+      'Line Total',
+      'Order Total',
+      'Delivery Fee'
+    ].join(','));
+
+    const safe = (val) => {
+      if (val === null || val === undefined) return '';
+      const str = String(val).replace(/"/g, '""');
+      // Wrap in quotes to keep commas newlines safe
+      return `"${str}"`;
+    };
+
+    (filteredOrders || []).forEach(order => {
+      const base = [
+        safe(order._id),
+        safe(new Date(order.date).toISOString()),
+        safe(order.status),
+        safe(order.userId || ''),
+        safe(order.phone || order.telephone || ''),
+        safe(order.wilaya || ''),
+        safe(order.commune || ''),
+        safe(order.deliveryType || ''),
+        safe(order.address || ''),
+      ];
+      (order.items || []).forEach(item => {
+        const variant = item.variant || {};
+        const unit = Number(item.price || 0);
+        const qty = Number(item.quantity || 0);
+        const lineTotal = unit * qty;
+        const row = base.concat([
+          safe(item.name),
+          safe(variant.size || ''),
+          safe(variant.color || ''),
+          safe(variant.age || ''),
+          safe(qty),
+          safe(unit),
+          safe(lineTotal),
+          safe(order.total || 0),
+          safe(order.deliveryFee || 0),
+        ]);
+        rows.push(row.join(','));
+      });
+    });
+
+    const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    const now = new Date();
+    link.download = `orders_${now.toISOString().slice(0,10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -139,6 +212,10 @@ const OrderList = () => {
             </button>
           ))}
         </div>
+      </div>
+
+      <div className="export-actions">
+        <button className="export-btn" onClick={downloadCSV}>⬇️ Export CSV</button>
       </div>
 
       {/* Orders Table */}
