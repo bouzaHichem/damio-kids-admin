@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './Analytics.css';
 import { backend_url } from '../../App';
+import useMetrics from '../../hooks/useMetrics';
 
 const Analytics = () => {
   const [dashboardStats, setDashboardStats] = useState(null);
@@ -17,6 +18,8 @@ const Analytics = () => {
   useEffect(() => {
     fetchAnalyticsData();
   }, [dateRange, period]);
+
+  const live = useMetrics();
 
   const fetchAnalyticsData = async () => {
     try {
@@ -129,10 +132,8 @@ const Analytics = () => {
             <div className="stat-icon">💰</div>
             <div className="stat-content">
               <h3>Total Revenue</h3>
-              <p className="stat-value">{formatCurrency(dashboardStats.totalRevenue || 0)}</p>
-              <span className="stat-change positive">
-                +{dashboardStats.revenueGrowth || 0}% from last period
-              </span>
+              <p className="stat-value">{formatCurrency((live.loading ? (dashboardStats?.totalRevenue || 0) : (live.totalRevenue || 0)))}</p>
+              <span className="stat-change">Live</span>
             </div>
           </div>
 
@@ -140,10 +141,8 @@ const Analytics = () => {
             <div className="stat-icon">📦</div>
             <div className="stat-content">
               <h3>Total Orders</h3>
-              <p className="stat-value">{dashboardStats.totalOrders || 0}</p>
-              <span className="stat-change positive">
-                +{dashboardStats.ordersGrowth || 0}% from last period
-              </span>
+              <p className="stat-value">{live.loading ? (dashboardStats?.totalOrders || 0) : (live.totalOrders || 0)}</p>
+              <span className="stat-change">Live</span>
             </div>
           </div>
 
