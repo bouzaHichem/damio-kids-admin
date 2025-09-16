@@ -344,6 +344,43 @@ const OrderList = () => {
                           {order.deliveryType === 'pickup' ? '📦 Pickup Point' : '🏠 Home Delivery'}
                         </span>
                       </div>
+
+                      {/* Delivery Fee Management details if available */}
+                      {order.deliveryDetails && (
+                        <>
+                          {(order.deliveryDetails.wilaya || order.deliveryDetails.commune) && (
+                            <div className="delivery-detail">
+                              <span className="detail-label">Delivery Zone:</span>
+                              <span className="detail-value">
+                                {`${order.deliveryDetails.wilaya || '—'}${order.deliveryDetails.commune ? ' / ' + order.deliveryDetails.commune : ''}`}
+                              </span>
+                            </div>
+                          )}
+                          {(() => {
+                            const d = order.deliveryDetails;
+                            const est = d.estimatedDeliveryDisplay || (d.estimatedDays ? (d.estimatedDays.min === d.estimatedDays.max ? `${d.estimatedDays.min} day${d.estimatedDays.min > 1 ? 's' : ''}` : `${d.estimatedDays.min}-${d.estimatedDays.max} days`) : null);
+                            return est ? (
+                              <div className="delivery-detail">
+                                <span className="detail-label">Estimated:</span>
+                                <span className="detail-value">{est}</span>
+                              </div>
+                            ) : null;
+                          })()}
+                          {order.deliveryDetails.freeDeliveryThreshold != null && (
+                            <div className="delivery-detail">
+                              <span className="detail-label">Free over:</span>
+                              <span className="detail-value">{formatCurrency(order.deliveryDetails.freeDeliveryThreshold)}</span>
+                            </div>
+                          )}
+                          {order.deliveryDetails.notes && (
+                            <div className="delivery-detail">
+                              <span className="detail-label">Notes:</span>
+                              <span className="detail-value">{order.deliveryDetails.notes}</span>
+                            </div>
+                          )}
+                        </>
+                      )}
+
                       <div className="delivery-detail">
                         <span className="detail-label">Products Total:</span>
                         <span className="detail-value">{formatCurrency(computeProductsTotal(order))}</span>
