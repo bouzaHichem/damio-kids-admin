@@ -271,7 +271,16 @@ const OrderList = () => {
                 <div className="order-content">
                   <div className="customer-info">
                     <h4>👤 Customer</h4>
-                    <p>{order.userId}</p>
+                    <p>
+                      {order.firstName || order.lastName ? (
+                        <>
+                          <strong>{order.firstName || ''} {order.lastName || ''}</strong>
+                          {order.phoneNumber && <span style={{ marginLeft: 8, color: '#6b7280' }}>• {order.phoneNumber}</span>}
+                        </>
+                      ) : (
+                        order.userId
+                      )}
+                    </p>
                   </div>
 
                   <div className="products-info">
