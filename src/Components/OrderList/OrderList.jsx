@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { backend_url } from "../../App";
+import { backend_url, currency } from "../../App";
 import "./OrderList.css";
 
 const OrderList = () => {
@@ -56,6 +56,34 @@ const OrderList = () => {
       default: return "📋";
     }
   };
+
+  // Helpers for money and totals (supports both old and new backend payloads)
+  const toNumber = (v) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  };
+
+  const computeProductsTotal = (order) => {
+    if (order && order.productsTotal != null) return toNumber(order.productsTotal);
+    if (order && order.total != null && order.deliveryFee != null) {
+      return toNumber(order.total) - toNumber(order.deliveryFee);
+    }
+    const items = (order?.items || []);
+    return items.reduce((sum, item) => sum + toNumber(item.price) * toNumber(item.quantity), 0);
+  };
+
+  const computeDeliveryFee = (order) => {
+    if (order && order.deliveryFee != null) return toNumber(order.deliveryFee);
+    return 0;
+  };
+
+  const computeTotalAmount = (order) => {
+    if (order && order.totalAmount != null) return toNumber(order.totalAmount);
+    if (order && order.total != null) return toNumber(order.total);
+    return computeProductsTotal(order) + computeDeliveryFee(order);
+  };
+
+  const formatCurrency = (amount) => `${toNumber(amount).toFixed(2)} ${currency}`;
 
   const filteredOrders = filter === "All" ? orders : orders.filter(order => order.status === filter);
 
@@ -249,7 +277,7 @@ const OrderList = () => {
                   <div className="products-info">
                     <h4>🛍️ Products</h4>
                     <div className="products-list">
-                      {order.items.map((item, idx) => (
+                      {(order.items || []).map((item, idx) => (
                         <div key={idx} className="product-item">
                           <span className="product-name">
                             {item.name}
@@ -317,10 +345,16 @@ const OrderList = () => {
                         </span>
                       </div>
                       <div className="delivery-detail">
+                        <span className="detail-label">Products Total:</span>
+                        <span className="detail-value">{formatCurrency(computeProductsTotal(order))}</span>
+                      </div>
+                      <div className="delivery-detail">
                         <span className="detail-label">Delivery Fee:</span>
-                        <span className="detail-value fee-amount">
-                          {order.deliveryFee ? `${order.deliveryFee.toFixed(2)} د.ج` : 'Free'}
-                        </span>
+                        <span className="detail-value fee-amount">{formatCurrency(computeDeliveryFee(order))}</span>
+                      </div>
+                      <div className="delivery-detail">
+                        <span className="detail-label">Total Amount:</span>
+                        <span className="detail-value">{formatCurrency(computeTotalAmount(order))}</span>
                       </div>
                     </div>
                   </div>
@@ -329,18 +363,18 @@ const OrderList = () => {
                     <div className="subtotal-amount">
                       <span className="subtotal-label">Products Total:</span>
                       <span className="subtotal-value">
-                        {(order.total - (order.deliveryFee || 0)).toFixed(2)} د.ج
+                        {formatCurrency(computeProductsTotal(order))}
                       </span>
                     </div>
                     <div className="delivery-fee-amount">
                       <span className="delivery-fee-label">Delivery Fee:</span>
                       <span className="delivery-fee-value">
-                        {order.deliveryFee ? order.deliveryFee.toFixed(2) : '0.00'} د.ج
+                        {formatCurrency(computeDeliveryFee(order))}
                       </span>
                     </div>
                     <div className="total-amount">
                       <span className="total-label">Total Amount:</span>
-                      <span className="total-value">{order.total.toFixed(2)} د.ج</span>
+                      <span className="total-value">{formatCurrency(computeTotalAmount(order))}</span>
                     </div>
                   </div>
                 </div>
