@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./AddProduct.css";
 import upload_area from "../Assets/upload_area.svg";
 import { backend_url } from "../../App";
+import { useTranslation } from 'react-i18next';
 
 const AddProduct = () => {
   const [image, setImage] = useState(false);
@@ -113,6 +114,9 @@ const AddProduct = () => {
   const sizeOptions = ["Newborn", "0-3M", "3-6M", "6-9M", "9-12M", "12-18M", "18-24M", "2T", "3T", "4T", "5T", "6T"];
   const colorOptions = ["Red", "Blue", "Green", "Yellow", "Pink", "Purple", "Orange", "Black", "White", "Gray", "Brown", "Navy"];
   const materialOptions = ["Cotton", "Polyester", "Wool", "Silk", "Denim", "Linen", "Fleece", "Organic Cotton", "Bamboo", "Mixed"];
+
+  // i18n
+  const { t } = useTranslation();
 
   // Custom size / shoe size helpers and state
   const [showCustomSizeInput, setShowCustomSizeInput] = useState(false);
@@ -520,7 +524,7 @@ const AddProduct = () => {
       {activeTab === 'variants' && (
         <div className="tab-content">
           <div className="addproduct-itemfield">
-            <p>{require('react-i18next').useTranslation().t('addProduct.availableSizes')}</p>
+            <p>{t('addProduct.availableSizes')}</p>
             <div className="checkbox-group">
               {sizeOptions.map(size => (
                 <label key={size} className="checkbox-item">
@@ -539,7 +543,7 @@ const AddProduct = () => {
                 onClick={() => setShowCustomSizeInput(!showCustomSizeInput)}
                 style={{ borderStyle: 'dashed', color: '#6079ff', background: '#f8f9ff' }}
               >
-                {require('react-i18next').useTranslation().t('addProduct.addCustomSize')}
+                {t('addProduct.addCustomSize')}
               </button>
             </div>
             {/* Custom sizes chips */}
@@ -568,10 +572,10 @@ const AddProduct = () => {
                   value={customSizeInput}
                   onChange={(e) => setCustomSizeInput(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addCustomSizesFromInput(); } }}
-                  placeholder={require('react-i18next').useTranslation().t('addProduct.addCustomSize')}
+                  placeholder={t('addProduct.addCustomSize')}
                 />
-                <button type="button" className="addproduct-btn" style={{ height: 40, minWidth: 80 }} onClick={addCustomSizesFromInput}>{require('react-i18next').useTranslation().t('addProduct.add')}</button>
-                <button type="button" onClick={() => setShowCustomSizeInput(false)} style={{ background: '#e5e7eb', color: '#111827', border: 'none', borderRadius: 6, padding: '8px 12px', cursor: 'pointer', height: 40, minWidth: 80 }}>{require('react-i18next').useTranslation().t('addProduct.cancel')}</button>
+                <button type="button" className="addproduct-btn" style={{ height: 40, minWidth: 80 }} onClick={addCustomSizesFromInput}>{t('addProduct.add')}</button>
+                <button type="button" onClick={() => setShowCustomSizeInput(false)} style={{ background: '#e5e7eb', color: '#111827', border: 'none', borderRadius: 6, padding: '8px 12px', cursor: 'pointer', height: 40, minWidth: 80 }}>{t('addProduct.cancel')}</button>
               </div>
             )}
           </div>
@@ -597,16 +601,16 @@ const AddProduct = () => {
 
           {/* Shoe Size / Pointure */}
           <div className="addproduct-itemfield">
-            <p>{require('react-i18next').useTranslation().t('addProduct.shoeSize')}</p>
+            <p>{t('addProduct.shoeSize')}</p>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
               <input
                 type="text"
                 value={shoeSizeInput}
                 onChange={(e) => setShoeSizeInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addShoeSizesFromInput(); } }}
-                placeholder={require('react-i18next').useTranslation().t('addProduct.shoeSize')}
+                placeholder={t('addProduct.shoeSize')}
               />
-              <button type="button" className="addproduct-btn" style={{ height: 40, minWidth: 80 }} onClick={addShoeSizesFromInput}>{require('react-i18next').useTranslation().t('addProduct.add')}</button>
+              <button type="button" className="addproduct-btn" style={{ height: 40, minWidth: 80 }} onClick={addShoeSizesFromInput}>{t('addProduct.add')}</button>
             </div>
             {productDetails.shoeSizes && productDetails.shoeSizes.length > 0 && (
               <div className="checkbox-group" style={{ marginTop: 8 }}>
@@ -856,7 +860,7 @@ const AddProduct = () => {
           }
         }}>Reset Form</button>
         <button className="addproduct-btn" onClick={AddProduct}>
-          {require('react-i18next').useTranslation().t('addProduct.save')}
+          {t('addProduct.save')}
         </button>
       </div>
     </div>
