@@ -322,6 +322,23 @@ const OrderList = () => {
                                     color: '#0e7490'
                                   }}>Age: {item.variant.age}</span>
                                 )}
+                                {/* Shoe sizes if provided on item.variant */}
+                                {(() => {
+                                  const v = item.variant || {};
+                                  const ss = v.shoeSize || v.shoeSizes;
+                                  if (!ss) return null;
+                                  const list = Array.isArray(ss) ? ss : [ss];
+                                  return list.map((s, i) => (
+                                    <span key={`sh-${i}`} style={{
+                                      padding: '2px 8px',
+                                      borderRadius: 9999,
+                                      background: '#f0fdf4',
+                                      border: '1px solid #dcfce7',
+                                      fontSize: 12,
+                                      color: '#166534'
+                                    }}>Shoe: {s}</span>
+                                  ));
+                                })()}
                               </span>
                             )}
                           </span>

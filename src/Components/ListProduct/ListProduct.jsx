@@ -215,8 +215,14 @@ const ListProduct = () => {
                                     
                                     <div className="details-section">
                                         <h3>Variants</h3>
-                                        <p><strong>Colors:</strong> {renderArray(product.variants?.colors)}</p>
-                                        <p><strong>Sizes:</strong> {renderArray(product.variants?.sizes)}</p>
+                                        <p><strong>Colors:</strong> {renderArray(product.variants?.colors || product.colors)}</p>
+                                        <p><strong>Sizes:</strong> {(() => {
+                                          const preset = product.variants?.sizes || product.sizes || [];
+                                          const custom = product.customSizes || [];
+                                          const all = Array.from(new Set([...(preset || []), ...(custom || [])]));
+                                          return renderArray(all);
+                                        })()}</p>
+                                        <p><strong>Shoe Sizes:</strong> {renderArray(product.shoeSizes)}</p>
                                         <p><strong>Age Groups:</strong> {renderArray(product.variants?.ageGroups)}</p>
                                         <p><strong>Materials:</strong> {renderArray(product.variants?.materials)}</p>
                                         <p><strong>Styles:</strong> {renderArray(product.variants?.styles)}</p>

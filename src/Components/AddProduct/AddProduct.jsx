@@ -27,6 +27,8 @@ const AddProduct = () => {
     
     // Product Variants
     sizes: [],
+    customSizes: [],
+    shoeSizes: [],
     colors: [],
     ageRange: { min: "", max: "" },
     
@@ -112,6 +114,46 @@ const AddProduct = () => {
   const colorOptions = ["Red", "Blue", "Green", "Yellow", "Pink", "Purple", "Orange", "Black", "White", "Gray", "Brown", "Navy"];
   const materialOptions = ["Cotton", "Polyester", "Wool", "Silk", "Denim", "Linen", "Fleece", "Organic Cotton", "Bamboo", "Mixed"];
 
+  // Custom size / shoe size helpers and state
+  const [showCustomSizeInput, setShowCustomSizeInput] = useState(false);
+  const [customSizeInput, setCustomSizeInput] = useState('');
+  const [shoeSizeInput, setShoeSizeInput] = useState('');
+
+  const parseList = (input) => {
+    return input.split(/[\,\n]/g).map(s => s.trim()).filter(Boolean);
+  };
+
+  const addCustomSizesFromInput = () => {
+    const newOnes = parseList(customSizeInput);
+    if (newOnes.length === 0) return;
+    const prev = productDetails.customSizes || [];
+    const merged = Array.from(new Set([...(prev), ...newOnes]));
+    setProductDetails({ ...productDetails, customSizes: merged });
+    setCustomSizeInput('');
+    setShowCustomSizeInput(false);
+  };
+
+  const removeCustomSize = (size) => {
+    const prev = productDetails.customSizes || [];
+    const filtered = prev.filter(s => s !== size);
+    setProductDetails({ ...productDetails, customSizes: filtered });
+  };
+
+  const addShoeSizesFromInput = () => {
+    const newOnes = parseList(shoeSizeInput);
+    if (newOnes.length === 0) return;
+    const prev = productDetails.shoeSizes || [];
+    const merged = Array.from(new Set([...(prev), ...newOnes]));
+    setProductDetails({ ...productDetails, shoeSizes: merged });
+    setShoeSizeInput('');
+  };
+
+  const removeShoeSize = (size) => {
+    const prev = productDetails.shoeSizes || [];
+    const filtered = prev.filter(s => s !== size);
+    setProductDetails({ ...productDetails, shoeSizes: filtered });
+  };
+
   const AddProduct = async () => {
     let dataObj;
     let product = { ...productDetails };
@@ -195,7 +237,7 @@ const AddProduct = () => {
           // Reset form
           setProductDetails({
             name: "", description: "", image: "", images: [], category: "", subcategory: "", categoryId: "", subcategoryId: "",
-            new_price: "", old_price: "", sizes: [], colors: [], ageRange: { min: "", max: "" },
+            new_price: "", old_price: "", sizes: [], customSizes: [], shoeSizes: [], colors: [], ageRange: { min: "", max: "" },
             brand: "", material: "", care_instructions: "", weight: "",
             dimensions: { length: "", width: "", height: "" }, stock_quantity: "",
             sku: "", tags: [], meta_title: "", meta_description: "",
@@ -490,7 +532,48 @@ const AddProduct = () => {
                   <span>{size}</span>
                 </label>
               ))}
+              {/* Add Custom Size tile */}
+              <button
+                type="button"
+                className="checkbox-item"
+                onClick={() => setShowCustomSizeInput(!showCustomSizeInput)}
+                style={{ borderStyle: 'dashed', color: '#6079ff', background: '#f8f9ff' }}
+              >
+                + Add Custom Size
+              </button>
             </div>
+            {/* Custom sizes chips */}
+            {productDetails.customSizes && productDetails.customSizes.length > 0 && (
+              <div className="checkbox-group" style={{ marginTop: 8 }}>
+                {productDetails.customSizes.map((size) => (
+                  <div key={size} className="checkbox-item" style={{ position: 'relative', background: '#f8fafc' }}>
+                    <span>{size}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeCustomSize(size)}
+                      aria-label={`Remove ${size}`}
+                      style={{ position: 'absolute', right: 8, top: 8, border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 16 }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            {/* Custom size input */}
+            {showCustomSizeInput && (
+              <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                <input
+                  type="text"
+                  value={customSizeInput}
+                  onChange={(e) => setCustomSizeInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addCustomSizesFromInput(); } }}
+                  placeholder="Type a custom size (or multiple, comma-separated)"
+                />
+                <button type="button" className="addproduct-btn" style={{ height: 40, minWidth: 80 }} onClick={addCustomSizesFromInput}>Add</button>
+                <button type="button" onClick={() => setShowCustomSizeInput(false)} style={{ background: '#e5e7eb', color: '#111827', border: 'none', borderRadius: 6, padding: '8px 12px', cursor: 'pointer', height: 40, minWidth: 80 }}>Cancel</button>
+              </div>
+            )}
           </div>
 
           <div className="addproduct-itemfield">
@@ -510,6 +593,38 @@ const AddProduct = () => {
                 </label>
               ))}
             </div>
+          </div>
+
+          {/* Shoe Size / Pointure */}
+          <div className="addproduct-itemfield">
+            <p>Shoe Size / Pointure</p>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <input
+                type="text"
+                value={shoeSizeInput}
+                onChange={(e) => setShoeSizeInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addShoeSizesFromInput(); } }}
+                placeholder="e.g., 22, 23, 24 (press Enter to add)"
+              />
+              <button type="button" className="addproduct-btn" style={{ height: 40, minWidth: 80 }} onClick={addShoeSizesFromInput}>Add</button>
+            </div>
+            {productDetails.shoeSizes && productDetails.shoeSizes.length > 0 && (
+              <div className="checkbox-group" style={{ marginTop: 8 }}>
+                {productDetails.shoeSizes.map((size) => (
+                  <div key={size} className="checkbox-item" style={{ position: 'relative' }}>
+                    <span>{size}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeShoeSize(size)}
+                      aria-label={`Remove ${size}`}
+                      style={{ position: 'absolute', right: 8, top: 8, border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 16 }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="addproduct-row">
@@ -727,7 +842,7 @@ const AddProduct = () => {
           if(window.confirm('Are you sure you want to reset the form?')) {
             setProductDetails({
               name: "", description: "", image: "", images: [], category: "", subcategory: "",
-              new_price: "", old_price: "", sizes: [], colors: [], ageRange: { min: "", max: "" },
+              new_price: "", old_price: "", sizes: [], customSizes: [], shoeSizes: [], colors: [], ageRange: { min: "", max: "" },
               brand: "", material: "", care_instructions: "", weight: "",
               dimensions: { length: "", width: "", height: "" }, stock_quantity: "",
               sku: "", tags: [], meta_title: "", meta_description: "",
