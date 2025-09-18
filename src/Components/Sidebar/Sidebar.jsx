@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import './Sidebar.css'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAdminAuth } from '../../hooks/useAdminAuth'
+import { useTranslation } from 'react-i18next'
 
 const Sidebar = ({ mobileOpen, onMobileClose }) => {
   const [collapsed, setCollapsed] = useState(false)
@@ -38,12 +39,14 @@ const Sidebar = ({ mobileOpen, onMobileClose }) => {
     }
   }, [mobileOpen, onMobileClose])
 
+  const { t } = useTranslation();
+
   const menuItems = [
     // Dashboard & Analytics
     {
       path: '/analytics',
       icon: '📊',
-      label: 'Analytics',
+      label: t('nav.analytics'),
       description: 'Business insights & reports',
       section: 'dashboard'
     },
@@ -52,21 +55,21 @@ const Sidebar = ({ mobileOpen, onMobileClose }) => {
     {
       path: '/addproduct',
       icon: '📦',
-      label: 'Add Product',
+      label: t('nav.addProduct'),
       description: 'Create new products',
       section: 'products'
     },
     {
       path: '/listproduct',
       icon: '📋',
-      label: 'Product List',
+      label: t('nav.productList'),
       description: 'Manage all products',
       section: 'products'
     },
     {
       path: '/inventory',
       icon: '📦',
-      label: 'Inventory',
+      label: t('nav.inventory'),
       description: 'Stock management & alerts',
       section: 'products'
     },
@@ -75,14 +78,14 @@ const Sidebar = ({ mobileOpen, onMobileClose }) => {
     {
       path: '/OrderList',
       icon: '🛒',
-      label: 'Orders',
+      label: t('nav.orders'),
       description: 'View and manage orders',
       section: 'orders'
     },
     {
       path: '/DeliveryManagement',
       icon: '🚚',
-      label: 'Delivery',
+      label: t('nav.delivery'),
       description: 'Manage deliveries',
       section: 'orders'
     },
@@ -91,21 +94,21 @@ const Sidebar = ({ mobileOpen, onMobileClose }) => {
     {
       path: '/categorymanagement',
       icon: '🏷️',
-      label: 'Categories',
+      label: t('nav.categories'),
       description: 'Organize product categories',
       section: 'content'
     },
     {
       path: '/shopimagemanagement',
       icon: '🖼️',
-      label: 'Shop Images',
+      label: t('nav.shopImages'),
       description: 'Manage shop visuals',
       section: 'content'
     },
     {
       path: '/collectionsmanagement',
       icon: '📚',
-      label: 'Collections',
+      label: t('nav.collections'),
       description: 'Manage product collections',
       section: 'content'
     },
@@ -114,7 +117,7 @@ const Sidebar = ({ mobileOpen, onMobileClose }) => {
     {
       path: '/email-notifications',
       icon: '📧',
-      label: 'Email Notifications',
+      label: t('nav.emailNotifications'),
       description: 'Email management & templates',
       section: 'communication'
     },
@@ -123,19 +126,19 @@ const Sidebar = ({ mobileOpen, onMobileClose }) => {
     {
       path: '/settings',
       icon: '⚙️',
-      label: 'Settings',
+      label: t('nav.settings'),
       description: 'Admin profile & account settings',
       section: 'settings'
     }
   ]
 
   const menuSections = {
-    dashboard: 'DASHBOARD',
-    products: 'PRODUCTS',
-    orders: 'ORDERS',
-    content: 'CONTENT',
-    communication: 'COMMUNICATION',
-    settings: 'SETTINGS'
+    dashboard: t('nav.dashboardSection'),
+    products: t('nav.productsSection'),
+    orders: t('nav.ordersSection'),
+    content: t('nav.contentSection'),
+    communication: t('nav.communicationSection'),
+    settings: t('nav.settingsSection')
   }
 
   // Handle logout
@@ -180,8 +183,8 @@ const Sidebar = ({ mobileOpen, onMobileClose }) => {
             <span className="logo-icon" role="img" aria-label="Crown">👑</span>
             {!collapsed && (
               <div className="logo-text">
-                <h3>Damio Kids</h3>
-                <span>Admin Panel</span>
+                <h3>{t('app.name')}</h3>
+                <span>{t('app.adminPanel')}</span>
               </div>
             )}
           </div>
@@ -190,8 +193,8 @@ const Sidebar = ({ mobileOpen, onMobileClose }) => {
           <button 
             className="collapse-btn"
             onClick={() => setCollapsed(!collapsed)}
-            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            title={collapsed ? t('nav.expandSidebar') : t('nav.collapseSidebar')}
+            aria-label={collapsed ? t('nav.expandSidebar') : t('nav.collapseSidebar')}
           >
             {collapsed ? '→' : '←'}
           </button>
@@ -200,8 +203,8 @@ const Sidebar = ({ mobileOpen, onMobileClose }) => {
           <button 
             className="close-btn"
             onClick={onMobileClose}
-            title="Close sidebar"
-            aria-label="Close sidebar"
+            title={t('nav.closeSidebar')}
+            aria-label={t('nav.closeSidebar')}
           >
             ✕
           </button>
@@ -210,7 +213,7 @@ const Sidebar = ({ mobileOpen, onMobileClose }) => {
       {/* Navigation Menu */}
       <nav className="sidebar-nav">
         <div className="nav-section">
-          {!collapsed && <span className="nav-section-title">MAIN MENU</span>}
+          {!collapsed && <span className="nav-section-title">{t('nav.mainMenu')}</span>}
           {menuItems.map((item) => (
             <Link 
               key={item.path}

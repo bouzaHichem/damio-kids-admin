@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAdminAuth } from '../hooks/useAdminAuth';
 import './AdminLogin.css';
+import { useTranslation } from 'react-i18next';
 
 const AdminLogin = () => {
   const [formData, setFormData] = useState({
@@ -85,19 +86,21 @@ const AdminLogin = () => {
     }
   };
   
+  const { t } = useTranslation();
+
   return (
     <div className="admin-login">
       <div className="admin-login__container">
         <div className="admin-login__header">
           <div className="admin-login__logo">
-            <h1>Damio Kids</h1>
-            <span>Admin Panel</span>
+            <h1>{t('app.name')}</h1>
+            <span>{t('app.adminPanel')}</span>
           </div>
         </div>
         
         <div className="admin-login__card">
-          <h2 className="admin-login__title">Welcome Back</h2>
-          <p className="admin-login__subtitle">Sign in to your admin account</p>
+          <h2 className="admin-login__title">{t('auth.welcomeBack')}</h2>
+          <p className="admin-login__subtitle">{t('auth.signInToAdmin')}</p>
           
           {authError && (
             <div className="admin-login__error" role="alert">
@@ -111,7 +114,7 @@ const AdminLogin = () => {
           <form className="admin-login__form" onSubmit={handleSubmit}>
             <div className="admin-login__field">
               <label htmlFor="email" className="admin-login__label">
-                Email Address
+                {t('auth.emailAddress')}
               </label>
               <input
                 type="email"
@@ -120,7 +123,7 @@ const AdminLogin = () => {
                 value={formData.email}
                 onChange={handleChange}
                 className={`admin-login__input ${errors.email ? 'admin-login__input--error' : ''}`}
-                placeholder="Enter your email"
+                placeholder={t('auth.enterEmail')}
                 autoComplete="email"
                 disabled={isLoading}
               />
@@ -133,7 +136,7 @@ const AdminLogin = () => {
             
             <div className="admin-login__field">
               <label htmlFor="password" className="admin-login__label">
-                Password
+                {t('auth.password')}
               </label>
               <div className="admin-login__password-field">
                 <input
@@ -143,7 +146,7 @@ const AdminLogin = () => {
                   value={formData.password}
                   onChange={handleChange}
                   className={`admin-login__input ${errors.password ? 'admin-login__input--error' : ''}`}
-                  placeholder="Enter your password"
+                  placeholder={t('auth.enterPassword')}
                   autoComplete="current-password"
                   disabled={isLoading}
                 />
@@ -152,7 +155,7 @@ const AdminLogin = () => {
                   className="admin-login__password-toggle"
                   onClick={() => setShowPassword(!showPassword)}
                   disabled={isLoading}
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  aria-label={showPassword ? t('auth.password') : t('auth.password')}
                 >
                   {showPassword ? (
                     <svg fill="currentColor" viewBox="0 0 20 20">
@@ -185,18 +188,18 @@ const AdminLogin = () => {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Signing in...
+                  {t('auth.signingIn')}
                 </>
               ) : (
-                'Sign In'
+                t('auth.signIn')
               )}
             </button>
           </form>
           
           <div className="admin-login__footer">
-            <p className="admin-login__help-text">
-              Forgot your password? Contact the system administrator.
-            </p>
+              <p className="admin-login__help-text">
+                {t('auth.forgotPasswordHint')}
+              </p>
           </div>
         </div>
       </div>

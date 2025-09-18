@@ -520,7 +520,7 @@ const AddProduct = () => {
       {activeTab === 'variants' && (
         <div className="tab-content">
           <div className="addproduct-itemfield">
-            <p>Available Sizes</p>
+            <p>{require('react-i18next').useTranslation().t('addProduct.availableSizes')}</p>
             <div className="checkbox-group">
               {sizeOptions.map(size => (
                 <label key={size} className="checkbox-item">
@@ -539,7 +539,7 @@ const AddProduct = () => {
                 onClick={() => setShowCustomSizeInput(!showCustomSizeInput)}
                 style={{ borderStyle: 'dashed', color: '#6079ff', background: '#f8f9ff' }}
               >
-                + Add Custom Size
+                {require('react-i18next').useTranslation().t('addProduct.addCustomSize')}
               </button>
             </div>
             {/* Custom sizes chips */}
@@ -568,10 +568,10 @@ const AddProduct = () => {
                   value={customSizeInput}
                   onChange={(e) => setCustomSizeInput(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addCustomSizesFromInput(); } }}
-                  placeholder="Type a custom size (or multiple, comma-separated)"
+                  placeholder={require('react-i18next').useTranslation().t('addProduct.addCustomSize')}
                 />
-                <button type="button" className="addproduct-btn" style={{ height: 40, minWidth: 80 }} onClick={addCustomSizesFromInput}>Add</button>
-                <button type="button" onClick={() => setShowCustomSizeInput(false)} style={{ background: '#e5e7eb', color: '#111827', border: 'none', borderRadius: 6, padding: '8px 12px', cursor: 'pointer', height: 40, minWidth: 80 }}>Cancel</button>
+                <button type="button" className="addproduct-btn" style={{ height: 40, minWidth: 80 }} onClick={addCustomSizesFromInput}>{require('react-i18next').useTranslation().t('addProduct.add')}</button>
+                <button type="button" onClick={() => setShowCustomSizeInput(false)} style={{ background: '#e5e7eb', color: '#111827', border: 'none', borderRadius: 6, padding: '8px 12px', cursor: 'pointer', height: 40, minWidth: 80 }}>{require('react-i18next').useTranslation().t('addProduct.cancel')}</button>
               </div>
             )}
           </div>
@@ -597,16 +597,16 @@ const AddProduct = () => {
 
           {/* Shoe Size / Pointure */}
           <div className="addproduct-itemfield">
-            <p>Shoe Size / Pointure</p>
+            <p>{require('react-i18next').useTranslation().t('addProduct.shoeSize')}</p>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
               <input
                 type="text"
                 value={shoeSizeInput}
                 onChange={(e) => setShoeSizeInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addShoeSizesFromInput(); } }}
-                placeholder="e.g., 22, 23, 24 (press Enter to add)"
+                placeholder={require('react-i18next').useTranslation().t('addProduct.shoeSize')}
               />
-              <button type="button" className="addproduct-btn" style={{ height: 40, minWidth: 80 }} onClick={addShoeSizesFromInput}>Add</button>
+              <button type="button" className="addproduct-btn" style={{ height: 40, minWidth: 80 }} onClick={addShoeSizesFromInput}>{require('react-i18next').useTranslation().t('addProduct.add')}</button>
             </div>
             {productDetails.shoeSizes && productDetails.shoeSizes.length > 0 && (
               <div className="checkbox-group" style={{ marginTop: 8 }}>
@@ -856,7 +856,7 @@ const AddProduct = () => {
           }
         }}>Reset Form</button>
         <button className="addproduct-btn" onClick={AddProduct}>
-          Add Product
+          {require('react-i18next').useTranslation().t('addProduct.save')}
         </button>
       </div>
     </div>
