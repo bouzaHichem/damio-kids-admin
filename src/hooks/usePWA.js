@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { initializePushNotifications, requestNotificationPermission, sendTokenToServer } from '../firebase/config';
+import { tryWebPushFallback, isLikelyIOS } from '../push/webPush';
 import toast from 'react-hot-toast';
 
 /**
@@ -194,6 +195,16 @@ export const usePWA = () => {
           } catch (error) {
             console.warn('⚠️ Error registering token with backend:', error);
           }
+        } else {
+          // FCM failed – try Web Push fallback (useful for iOS)
+          const fallback = await tryWebPushFallback();
+          if (fallback.success) {
+            setIsNotificationsEnabled(true);
+            setNotificationPermission('granted');
+            toast.success('Notifications enabled via Web Push');
+          } else {
+            console.warn('Web Push fallback not available:', fallback.reason);
+          }
         }
       } catch (error) {
         console.error('❌ Failed to initialize push notifications:', error);
@@ -255,6 +266,14 @@ export const usePWA = () => {
         
         return true;
       } else {
+        // Fallback to Web Push
+        const fallback = await tryWebPushFallback();
+        if (fallback.success) {
+          setIsNotificationsEnabled(true);
+          setNotificationPermission('granted');
+          toast.success('Notifications enabled via Web Push');
+          return true;
+        }
         setNotificationPermission(result.permission || 'denied');
         toast.error(result.error || 'Failed to enable notifications');
         return false;
