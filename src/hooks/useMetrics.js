@@ -23,7 +23,8 @@ export default function useMetrics() {
     load();
 
     try {
-      es = new EventSource(`${backend_url}/api/admin/metrics/stream`);
+      const qs = token ? `?token=${encodeURIComponent(token)}` : '';
+      es = new EventSource(`${backend_url}/api/admin/metrics/stream${qs}`);
       es.addEventListener('metrics', (e) => {
         try {
           const data = JSON.parse(e.data);
