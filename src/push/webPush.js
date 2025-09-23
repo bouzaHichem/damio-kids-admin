@@ -45,7 +45,11 @@ export async function tryWebPushFallback() {
     }
 
     const backendUrl = process.env.REACT_APP_BACKEND_URL || '';
-    const adminToken = localStorage.getItem('admin-token') || localStorage.getItem('auth-token');
+    const adminToken =
+      localStorage.getItem('adminToken') ||
+      localStorage.getItem('authToken') ||
+      localStorage.getItem('admin-token') ||
+      localStorage.getItem('auth-token');
     const res = await fetch(`${backendUrl}/api/admin/webpush/subscribe`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminToken}` },

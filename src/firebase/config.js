@@ -167,7 +167,11 @@ export const setupForegroundMessageHandler = (onMessageReceived) => {
 export const sendTokenToServer = async (token) => {
   try {
     const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:4000';
-    const adminToken = localStorage.getItem('admin-token') || localStorage.getItem('auth-token'); // support both keys
+    const adminToken =
+      localStorage.getItem('adminToken') ||
+      localStorage.getItem('authToken') ||
+      localStorage.getItem('admin-token') ||
+      localStorage.getItem('auth-token'); // support multiple keys
     
     console.log('📤 Sending FCM token to backend...');
     
