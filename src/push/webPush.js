@@ -30,9 +30,28 @@ export async function tryWebPushFallback() {
     }
 
     const registration = await navigator.serviceWorker.ready;
-    const pubKey = process.env.REACT_APP_WEBPUSH_VAPID_PUBLIC_KEY;
+    let pubKey = process.env.REACT_APP_WEBPUSH_VAPID_PUBLIC_KEY;
+
+    // If not provided via env, try to fetch from backend config
     if (!pubKey) {
-      console.warn('Missing REACT_APP_WEBPUSH_VAPID_PUBLIC_KEY');
+      try {
+        const backendUrl = process.env.REACT_APP_BACKEND_URL || '';
+        const adminToken =
+          localStorage.getItem('adminToken') ||
+          localStorage.getItem('authToken') ||
+          localStorage.getItem('admin-token') ||
+          localStorage.getItem('auth-token');
+        if (backendUrl && adminToken) {
+          const cfg = await fetch(`${backendUrl}/api/admin/webpush/config`, {
+            headers: { 'Authorization': `Bearer ${adminToken}`, 'auth-token': adminToken }
+          }).then(r => r.json());
+          pubKey = cfg?.publicKey || null;
+        }
+      } catch {}
+    }
+
+    if (!pubKey) {
+      console.warn('Missing VAPID public key. Set REACT_APP_WEBPUSH_VAPID_PUBLIC_KEY or ensure /api/admin/webpush/config returns publicKey.');
       return { success: false, reason: 'missing-public-key' };
     }
 
