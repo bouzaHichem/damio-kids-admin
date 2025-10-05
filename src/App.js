@@ -5,6 +5,7 @@ import Navbar from "./Components/Navbar/Navbar";
 import Admin from "./Pages/Admin";
 import AdminLogin from "./Components/AdminLogin";
 import { useState } from "react";
+import { Toaster } from 'react-hot-toast';
 
 // Environment-based backend URL configuration
 export const backend_url = process.env.REACT_APP_BACKEND_URL || 
@@ -57,6 +58,7 @@ function App() {
   return (
     <BrowserRouter>
       <AdminAuthProvider>
+        <Toaster position="top-right" />
         <Routes>
           <Route path="/*" element={<AdminWrapper />} />
         </Routes>

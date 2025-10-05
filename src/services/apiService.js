@@ -292,6 +292,11 @@ export const productsAdminService = {
     // id can be numeric product.id or Mongo _id; backend supports both
     const res = await api.put(`/api/admin/products/${id}`, flags);
     return res.data;
+  },
+  async updateProduct(id, payload) {
+    // Partial update of product fields
+    const res = await api.put(`/api/admin/products/${id}`, payload);
+    return res.data;
   }
 };
 
