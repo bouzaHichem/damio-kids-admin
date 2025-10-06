@@ -131,7 +131,11 @@ const OrderList = () => {
         safe(order.address || ''),
       ];
       (order.items || []).forEach(item => {
-        const variant = item.variant || {};
+        const variant = item.variant || {
+          size: item.size || item.selectedSize || item.variantSize,
+          color: item.color || item.selectedColor || item.variantColor,
+          age: item.age || item.selectedAge || item.variantAge,
+        };
         const unit = Number(item.price || 0);
         const qty = Number(item.quantity || 0);
         const lineTotal = unit * qty;
@@ -286,65 +290,71 @@ const OrderList = () => {
                   <div className="products-info">
                     <h4>🛍️ Products</h4>
                     <div className="products-list">
-                      {(order.items || []).map((item, idx) => (
-                        <div key={idx} className="product-item">
-                          <span className="product-name">
-                            {item.name}
-                            {item.variant && (
-                              <span style={{ marginLeft: 8, display: 'inline-flex', gap: 6, flexWrap: 'wrap' }}>
-                                {item.variant.size && (
-                                  <span style={{
-                                    padding: '2px 8px',
-                                    borderRadius: 9999,
-                                    background: '#eef2ff',
-                                    border: '1px solid #e0e7ff',
-                                    fontSize: 12,
-                                    color: '#4338ca'
-                                  }}>Size: {item.variant.size}</span>
-                                )}
-                                {item.variant.color && (
-                                  <span style={{
-                                    padding: '2px 8px',
-                                    borderRadius: 9999,
-                                    background: '#fdf2f8',
-                                    border: '1px solid #fce7f3',
-                                    fontSize: 12,
-                                    color: '#be185d'
-                                  }}>Color: {item.variant.color}</span>
-                                )}
-                                {item.variant.age && (
-                                  <span style={{
-                                    padding: '2px 8px',
-                                    borderRadius: 9999,
-                                    background: '#ecfeff',
-                                    border: '1px solid #cffafe',
-                                    fontSize: 12,
-                                    color: '#0e7490'
-                                  }}>Age: {item.variant.age}</span>
-                                )}
-                                {/* Shoe sizes if provided on item.variant */}
-                                {(() => {
-                                  const v = item.variant || {};
-                                  const ss = v.shoeSize || v.shoeSizes;
-                                  if (!ss) return null;
-                                  const list = Array.isArray(ss) ? ss : [ss];
-                                  return list.map((s, i) => (
-                                    <span key={`sh-${i}`} style={{
+                      {(order.items || []).map((item, idx) => {
+                        const v = item.variant || {
+                          size: item.size || item.selectedSize || item.variantSize,
+                          color: item.color || item.selectedColor || item.variantColor,
+                          age: item.age || item.selectedAge || item.variantAge,
+                          shoeSizes: item.shoeSizes || item.variantShoeSizes || item.shoeSize,
+                        };
+                        return (
+                          <div key={idx} className="product-item">
+                            <span className="product-name">
+                              {item.name}
+                              {(v.size || v.color || v.age || v.shoeSizes) && (
+                                <span style={{ marginLeft: 8, display: 'inline-flex', gap: 6, flexWrap: 'wrap' }}>
+                                  {v.size && (
+                                    <span style={{
                                       padding: '2px 8px',
                                       borderRadius: 9999,
-                                      background: '#f0fdf4',
-                                      border: '1px solid #dcfce7',
+                                      background: '#eef2ff',
+                                      border: '1px solid #e0e7ff',
                                       fontSize: 12,
-                                      color: '#166534'
-                                    }}>Shoe: {s}</span>
-                                  ));
-                                })()}
-                              </span>
-                            )}
-                          </span>
-                          <span className="product-quantity">×{item.quantity}</span>
-                        </div>
-                      ))}
+                                      color: '#4338ca'
+                                    }}>Size: {v.size}</span>
+                                  )}
+                                  {v.color && (
+                                    <span style={{
+                                      padding: '2px 8px',
+                                      borderRadius: 9999,
+                                      background: '#fdf2f8',
+                                      border: '1px solid #fce7f3',
+                                      fontSize: 12,
+                                      color: '#be185d'
+                                    }}>Color: {v.color}</span>
+                                  )}
+                                  {v.age && (
+                                    <span style={{
+                                      padding: '2px 8px',
+                                      borderRadius: 9999,
+                                      background: '#ecfeff',
+                                      border: '1px solid #cffafe',
+                                      fontSize: 12,
+                                      color: '#0e7490'
+                                    }}>Age: {v.age}</span>
+                                  )}
+                                  {(() => {
+                                    const ss = v.shoeSizes;
+                                    if (!ss) return null;
+                                    const list = Array.isArray(ss) ? ss : [ss];
+                                    return list.map((s, i) => (
+                                      <span key={`sh-${i}`} style={{
+                                        padding: '2px 8px',
+                                        borderRadius: 9999,
+                                        background: '#f0fdf4',
+                                        border: '1px solid #dcfce7',
+                                        fontSize: 12,
+                                        color: '#166534'
+                                      }}>Shoe: {s}</span>
+                                    ));
+                                  })()}
+                                </span>
+                              )}
+                            </span>
+                            <span className="product-quantity">×{item.quantity}</span>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
 

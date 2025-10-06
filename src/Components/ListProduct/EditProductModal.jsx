@@ -266,7 +266,8 @@ const EditProductModal = ({ open, onClose, product, onSaved }) => {
                   {form.customSizes.map((cs) => (
                     <span key={cs} className="inline-flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1 text-xs">
                       {cs}
-                      <button type="button" className="text-gray-500 hover:text-red-600" onClick={() => setForm((p)=>({...p, customSizes: p.customSizes.filter(x=>x!==cs)}))}>×</button>
+                      <button type="button" className="text-gray-500 hover:text-red-600" onClick={() => setForm((p)=>({...p, customSizes: p.customSizes.filter(x=>x!==cs)}))} aria-label={`Remove ${cs}`}>×</button>
+                      <button type="button" className="ml-1 text-[11px] text-red-600 hover:underline" onClick={() => setForm((p)=>({...p, customSizes: p.customSizes.filter(x=>x!==cs)}))}>Delete variant</button>
                     </span>
                   ))}
                 </div>
@@ -283,7 +284,8 @@ const EditProductModal = ({ open, onClose, product, onSaved }) => {
                   {form.shoeSizes.map((ss) => (
                     <span key={ss} className="inline-flex items-center gap-2 rounded-full bg-green-50 px-3 py-1 text-xs text-green-800 ring-1 ring-inset ring-green-200">
                       {ss}
-                      <button type="button" className="text-green-700 hover:text-red-600" onClick={() => setForm((p)=>({...p, shoeSizes: p.shoeSizes.filter(x=>x!==ss)}))}>×</button>
+                      <button type="button" className="text-green-700 hover:text-red-600" onClick={() => setForm((p)=>({...p, shoeSizes: p.shoeSizes.filter(x=>x!==ss)}))} aria-label={`Remove ${ss}`}>×</button>
+                      <button type="button" className="ml-1 text-[11px] text-red-600 hover:underline" onClick={() => setForm((p)=>({...p, shoeSizes: p.shoeSizes.filter(x=>x!==ss)}))}>Delete variant</button>
                     </span>
                   ))}
                 </div>
@@ -305,6 +307,17 @@ const EditProductModal = ({ open, onClose, product, onSaved }) => {
                   );
                 })}
               </div>
+              {(form.colors || []).length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {form.colors.map((c) => (
+                    <span key={`sel-${c}`} className="inline-flex items-center gap-2 rounded-full bg-pink-50 px-3 py-1 text-xs text-pink-700 ring-1 ring-inset ring-pink-200">
+                      <span className="inline-block h-3 w-3 rounded-full border" style={{ backgroundColor: c.toLowerCase() }} /> {c}
+                      <button type="button" className="text-pink-700 hover:text-red-600" onClick={() => setForm((p)=>({...p, colors: p.colors.filter(x=>x!==c)}))} aria-label={`Remove ${c}`}>×</button>
+                      <button type="button" className="ml-1 text-[11px] text-red-600 hover:underline" onClick={() => setForm((p)=>({...p, colors: p.colors.filter(x=>x!==c)}))}>Delete variant</button>
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
