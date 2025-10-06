@@ -346,3 +346,40 @@
     padding: 20px 15px;
   }
 }
+
+/* Multi-select helpers for communes */
+.multiselect-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.multiselect-row select {
+  min-width: 260px;
+}
+
+.multiselect-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.small-btn {
+  padding: 6px 10px;
+  font-size: 12px;
+  border: 1px solid #ddd;
+  background: #f8f9fa;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.small-btn:hover {
+  background: #eceff3;
+}
+
+.hint {
+  display: block;
+  margin-top: 6px;
+  color: #6c757d;
+  font-size: 12px;
+}

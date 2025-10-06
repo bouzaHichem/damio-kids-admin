@@ -7,7 +7,7 @@ const DeliveryManagement = () => {
   const [deliveryRates, setDeliveryRates] = useState([]);
   const [rateFormData, setRateFormData] = useState({
     wilaya: '',
-    commune: '',
+    communes: [],
     deliveryType: 'home',
     fee: ''
   });
@@ -209,19 +209,38 @@ await adminApiClient.delete(`/api/admin/wilayas/${id}`);
 
   // Delivery rate management functions
   const handleRateInputChange = (e) => {
-    const { name, value } = e.target;
-    setRateFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    const { name, value, options } = e.target;
+    if (name === 'communes') {
+      const selected = Array.from(options || [])
+        .filter(o => o.selected)
+        .map(o => o.value);
+      setRateFormData(prev => ({
+        ...prev,
+        communes: selected
+      }));
+    } else {
+      setRateFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
 
   const handleRateSubmit = async (e) => {
     e.preventDefault();
     
     // Validation
-    if (!rateFormData.wilaya || !rateFormData.commune || !rateFormData.fee) {
+    if (!rateFormData.wilaya || !rateFormData.deliveryType || !rateFormData.fee) {
       setMessage('Please fill in all fields');
+      return;
+    }
+
+    const selectedCommunes = Array.isArray(rateFormData.communes)
+      ? rateFormData.communes.filter(Boolean)
+      : [];
+
+    if (selectedCommunes.length === 0) {
+      setMessage('Please select at least one commune');
       return;
     }
 
@@ -235,23 +254,46 @@ await adminApiClient.delete(`/api/admin/wilayas/${id}`);
       setLoading(true);
 
       if (editingRateId) {
+        if (selectedCommunes.length !== 1) {
+          setMessage('When editing a delivery rate, select exactly one commune.');
+          return;
+        }
         await adminApiClient.put(`/api/admin/deliveryrates/${editingRateId}`, {
           wilaya: rateFormData.wilaya,
-          commune: rateFormData.commune,
+          commune: selectedCommunes[0],
           deliveryType: rateFormData.deliveryType,
           fee: numericFee
         });
+        setMessage('Delivery rate updated successfully!');
       } else {
-        await adminApiClient.post('/api/admin/deliveryrates', {
-          wilaya: rateFormData.wilaya,
-          commune: rateFormData.commune,
-          deliveryType: rateFormData.deliveryType,
-          fee: numericFee
-        });
+        // Create one rate per selected commune
+        const ops = selectedCommunes.map((commune) =>
+          adminApiClient
+            .post('/api/admin/deliveryrates', {
+              wilaya: rateFormData.wilaya,
+              commune,
+              deliveryType: rateFormData.deliveryType,
+              fee: numericFee
+            })
+            .then(() => ({ commune, ok: true }))
+            .catch((err) => ({ commune, ok: false, err }))
+        );
+
+        const results = await Promise.all(ops);
+        const successCount = results.filter(r => r.ok).length;
+        const failureCount = results.length - successCount;
+
+        if (successCount > 0 && failureCount === 0) {
+          setMessage(`Delivery rate added for ${successCount} commune(s) successfully!`);
+        } else if (successCount > 0 && failureCount > 0) {
+          setMessage(`Added rate for ${successCount} commune(s), but ${failureCount} failed. Try again for the failed ones.`);
+        } else {
+          const backendMsg = results[0]?.err?.response?.data?.message || results[0]?.err?.message || 'Unknown error';
+          setMessage(`Failed to add delivery rates: ${backendMsg}`);
+        }
       }
 
-      setMessage(editingRateId ? 'Delivery rate updated successfully!' : 'Delivery rate added successfully!');
-      setRateFormData({ wilaya: '', commune: '', deliveryType: 'home', fee: '' });
+      setRateFormData({ wilaya: '', communes: [], deliveryType: 'home', fee: '' });
       setEditingRateId(null);
       fetchDeliveryRates();
     } catch (error) {
@@ -266,7 +308,7 @@ await adminApiClient.delete(`/api/admin/wilayas/${id}`);
   const handleEditRate = (rate) => {
     setRateFormData({
       wilaya: rate.wilaya,
-      commune: rate.commune,
+      communes: [rate.commune],
       deliveryType: rate.deliveryType,
       fee: rate.fee.toString()
     });
@@ -294,7 +336,7 @@ await adminApiClient.delete(`/api/admin/wilayas/${id}`);
   };
 
   const handleCancelRate = () => {
-    setRateFormData({ wilaya: '', commune: '', deliveryType: 'home', fee: '' });
+    setRateFormData({ wilaya: '', communes: [], deliveryType: 'home', fee: '' });
     setEditingRateId(null);
     setMessage('');
   };
@@ -468,22 +510,63 @@ await adminApiClient.delete(`/api/admin/wilayas/${id}`);
               </div>
               
               <div className="form-group">
-                <label htmlFor="commune">Commune:</label>
-                <select
-                  id="commune"
-                  name="commune"
-                  value={rateFormData.commune}
-                  onChange={handleRateInputChange}
-                  required
-                  disabled={!rateFormData.wilaya}
-                >
-                  <option value="">Select a commune</option>
-                  {getAvailableCommunes().map((commune, index) => (
-                    <option key={index} value={commune}>
-                      {commune}
-                    </option>
-                  ))}
-                </select>
+                <label htmlFor="communes">Communes:</label>
+                <div className="multiselect-row">
+                  <select
+                    id="communes"
+                    name="communes"
+                    multiple
+                    value={rateFormData.communes}
+                    onChange={handleRateInputChange}
+                    required
+                    disabled={!rateFormData.wilaya}
+                    size={Math.min(8, Math.max(3, getAvailableCommunes().length))}
+                  >
+                    {getAvailableCommunes().map((commune, index) => (
+                      <option key={index} value={commune}>
+                        {commune}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="multiselect-actions">
+                    <button
+                      type="button"
+                      className="small-btn"
+                      onClick={() =>
+                        setRateFormData(prev => ({
+                          ...prev,
+                          communes: getAvailableCommunes()
+                        }))
+                      }
+                      disabled={!rateFormData.wilaya}
+                    >
+                      Select All
+                    </button>
+                    <button
+                      type="button"
+                      className="small-btn"
+                      onClick={() =>
+                        setRateFormData(prev => ({
+                          ...prev,
+                          communes: []
+                        }))
+                      }
+                      disabled={!rateFormData.wilaya}
+                    >
+                      Clear
+                    </button>
+                  </div>
+                </div>
+                {!editingRateId && (
+                  <small className="hint">
+                    Hold Cmd (Mac) or Ctrl (Windows) to select multiple communes.
+                  </small>
+                )}
+                {editingRateId && (
+                  <small className="hint">
+                    Editing a rate requires exactly one commune selected.
+                  </small>
+                )}
               </div>
               
               <div className="form-group">
