@@ -26,6 +26,8 @@ const DeliveryManagement = () => {
   const [message, setMessage] = useState('');
   const [activeTab, setActiveTab] = useState('wilayas'); // 'wilayas' or 'rates'
   const [listingSupported, setListingSupported] = useState(true);
+  // Filters for rates list
+  const [rateFilters, setRateFilters] = useState({ search: '', wilaya: '' });
 
   // Fetch data on component mount
   useEffect(() => {
@@ -347,6 +349,24 @@ await adminApiClient.delete(`/api/admin/wilayas/${id}`);
     return selectedWilaya ? selectedWilaya.communes : [];
   };
 
+  // Filters handlers and derived data
+  const handleRateFilterInputChange = (e) => {
+    const { name, value } = e.target;
+    setRateFilters(prev => ({ ...prev, [name]: value }));
+  };
+
+  const getFilteredRates = () => {
+    const q = rateFilters.search.trim().toLowerCase();
+    const list = Array.isArray(deliveryRates) ? deliveryRates : [];
+    return list.filter((rate) => {
+      const matchesWilaya = rateFilters.wilaya ? rate.wilaya === rateFilters.wilaya : true;
+      const matchesQuery = q
+        ? ((rate.wilaya || '').toLowerCase().includes(q) || (rate.commune || '').toLowerCase().includes(q) || (rate.deliveryType || '').toLowerCase().includes(q))
+        : true;
+      return matchesWilaya && matchesQuery;
+    });
+  };
+
   return (
     <div className="delivery-management">
       <h2>Delivery Fee Management</h2>
@@ -613,6 +633,39 @@ await adminApiClient.delete(`/api/admin/wilayas/${id}`);
 
       <div className="delivery-rates-container">
             <h3>Current Delivery Rates</h3>
+            <div className="filters-bar">
+              <div className="filter-group">
+                <label htmlFor="filterWilaya">Filter by wilaya</label>
+                <select id="filterWilaya" name="wilaya" value={rateFilters.wilaya} onChange={handleRateFilterInputChange}>
+                  <option value="">All wilayas</option>
+                  {wilayas.map((w) => (
+                    <option key={w._id} value={w.name}>{w.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="filter-group">
+                <label htmlFor="filterSearch">Search</label>
+                <input
+                  id="filterSearch"
+                  name="search"
+                  type="text"
+                  placeholder="Search wilaya, commune, or type"
+                  value={rateFilters.search}
+                  onChange={handleRateFilterInputChange}
+                />
+              </div>
+              <div className="filter-actions">
+                <button
+                  type="button"
+                  className="small-btn"
+                  onClick={() => setRateFilters({ search: '', wilaya: '' })}
+                  disabled={!rateFilters.search && !rateFilters.wilaya}
+                >
+                  Clear filters
+                </button>
+              </div>
+            </div>
+            <small className="hint">Showing {getFilteredRates().length} of {Array.isArray(deliveryRates) ? deliveryRates.length : 0} rate(s)</small>
             {loading && !editingRateId ? (
               <p>Loading delivery rates...</p>
             ) : (!Array.isArray(deliveryRates) || deliveryRates.length === 0) ? (
@@ -630,36 +683,50 @@ await adminApiClient.delete(`/api/admin/wilayas/${id}`);
                     </tr>
                   </thead>
                   <tbody>
-                    {deliveryRates.map((rate) => (
-                      <tr key={rate._id}>
-                        <td>{rate.wilaya}</td>
-                        <td>{rate.commune}</td>
-                        <td>
-                          <span className={`delivery-type ${rate.deliveryType}`}>
-                            {rate.deliveryType === 'home' ? 'Home Delivery' : 'Pickup Point'}
-                          </span>
-                        </td>
-                        <td>{rate.fee} DA</td>
-                        <td>
-                          <div className="action-buttons">
-                            <button
-                              onClick={() => handleEditRate(rate)}
-                              className="edit-btn"
-                              disabled={loading}
-                            >
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => handleDeleteRate(rate._id)}
-                              className="delete-btn"
-                              disabled={loading}
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </td>
+                    {getFilteredRates().length === 0 ? (
+                      <tr>
+                        <td colSpan="5">No results match your filters.</td>
                       </tr>
-                    ))}
+                    ) : (
+                      getFilteredRates().map((rate) => (
+                        <tr key={rate._id}>
+                          <td>
+                            <button
+                              type="button"
+                              className="link-like"
+                              onClick={() => setRateFilters(prev => ({ ...prev, wilaya: rate.wilaya }))}
+                            >
+                              {rate.wilaya}
+                            </button>
+                          </td>
+                          <td>{rate.commune}</td>
+                          <td>
+                            <span className={`delivery-type ${rate.deliveryType}`}>
+                              {rate.deliveryType === 'home' ? 'Home Delivery' : 'Pickup Point'}
+                            </span>
+                          </td>
+                          <td>{rate.fee} DA</td>
+                          <td>
+                            <div className="action-buttons">
+                              <button
+                                onClick={() => handleEditRate(rate)}
+                                className="edit-btn"
+                                disabled={loading}
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDeleteRate(rate._id)}
+                                className="delete-btn"
+                                disabled={loading}
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>

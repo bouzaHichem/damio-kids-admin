@@ -383,3 +383,44 @@
   color: #6c757d;
   font-size: 12px;
 }
+
+/* Filters bar for rates table */
+.filters-bar {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  margin-bottom: 10px;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 220px;
+}
+
+.filter-group input,
+.filter-group select {
+  padding: 10px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.filter-actions {
+  margin-left: auto;
+}
+
+.link-like {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: #007bff;
+  cursor: pointer;
+  text-decoration: underline;
+  font: inherit;
+}
+
+.link-like:hover {
+  color: #0056b3;
+}
