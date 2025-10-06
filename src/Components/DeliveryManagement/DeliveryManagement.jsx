@@ -28,6 +28,8 @@ const DeliveryManagement = () => {
   const [listingSupported, setListingSupported] = useState(true);
   // Filters for rates list
   const [rateFilters, setRateFilters] = useState({ search: '', wilaya: '' });
+  // Group expansion state for grouped rates list
+  const [expandedGroups, setExpandedGroups] = useState({});
 
   // Fetch data on component mount
   useEffect(() => {
@@ -367,6 +369,49 @@ await adminApiClient.delete(`/api/admin/wilayas/${id}`);
     });
   };
 
+  const getGroupedRates = () => {
+    const list = getFilteredRates();
+    const byWilaya = new Map();
+    list.forEach((rate) => {
+      const key = rate.wilaya || 'Unspecified';
+      if (!byWilaya.has(key)) byWilaya.set(key, []);
+      byWilaya.get(key).push(rate);
+    });
+    return Array.from(byWilaya.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([wilaya, rates]) => ({ wilaya, rates }));
+  };
+
+  const isGroupExpanded = (wilayaName) => {
+    if (Object.prototype.hasOwnProperty.call(expandedGroups, wilayaName)) {
+      return !!expandedGroups[wilayaName];
+    }
+    return true; // default expanded
+  };
+
+  const toggleGroup = (wilayaName) => {
+    setExpandedGroups((prev) => ({
+      ...prev,
+      [wilayaName]: !isGroupExpanded(wilayaName)
+    }));
+  };
+
+  const expandAllGroups = () => {
+    setExpandedGroups((prev) => {
+      const next = { ...prev };
+      getGroupedRates().forEach((g) => { next[g.wilaya] = true; });
+      return next;
+    });
+  };
+
+  const collapseAllGroups = () => {
+    setExpandedGroups((prev) => {
+      const next = { ...prev };
+      getGroupedRates().forEach((g) => { next[g.wilaya] = false; });
+      return next;
+    });
+  };
+
   return (
     <div className="delivery-management">
       <h2>Delivery Fee Management</h2>
@@ -666,6 +711,14 @@ await adminApiClient.delete(`/api/admin/wilayas/${id}`);
               </div>
             </div>
             <small className="hint">Showing {getFilteredRates().length} of {Array.isArray(deliveryRates) ? deliveryRates.length : 0} rate(s)</small>
+            <div className="group-controls">
+              <button type="button" className="small-btn" onClick={expandAllGroups}>
+                Expand all
+              </button>
+              <button type="button" className="small-btn" onClick={collapseAllGroups}>
+                Collapse all
+              </button>
+            </div>
             {loading && !editingRateId ? (
               <p>Loading delivery rates...</p>
             ) : (!Array.isArray(deliveryRates) || deliveryRates.length === 0) ? (
@@ -688,43 +741,62 @@ await adminApiClient.delete(`/api/admin/wilayas/${id}`);
                         <td colSpan="5">No results match your filters.</td>
                       </tr>
                     ) : (
-                      getFilteredRates().map((rate) => (
-                        <tr key={rate._id}>
-                          <td>
-                            <button
-                              type="button"
-                              className="link-like"
-                              onClick={() => setRateFilters(prev => ({ ...prev, wilaya: rate.wilaya }))}
-                            >
-                              {rate.wilaya}
-                            </button>
-                          </td>
-                          <td>{rate.commune}</td>
-                          <td>
-                            <span className={`delivery-type ${rate.deliveryType}`}>
-                              {rate.deliveryType === 'home' ? 'Home Delivery' : 'Pickup Point'}
-                            </span>
-                          </td>
-                          <td>{rate.fee} DA</td>
-                          <td>
-                            <div className="action-buttons">
+                      getGroupedRates().map((group) => (
+                        <React.Fragment key={group.wilaya}>
+                          <tr className="group-row">
+                            <td colSpan="5" className="group-row-cell">
                               <button
-                                onClick={() => handleEditRate(rate)}
-                                className="edit-btn"
-                                disabled={loading}
+                                type="button"
+                                className="group-toggle"
+                                onClick={() => toggleGroup(group.wilaya)}
+                                aria-expanded={isGroupExpanded(group.wilaya)}
+                                aria-controls={`group-${group.wilaya}`}
                               >
-                                Edit
+                                {isGroupExpanded(group.wilaya) ? '▾' : '▸'}
                               </button>
-                              <button
-                                onClick={() => handleDeleteRate(rate._id)}
-                                className="delete-btn"
-                                disabled={loading}
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
+                              <span className="group-title">{group.wilaya}</span>
+                              <span className="group-count">({group.rates.length})</span>
+                            </td>
+                          </tr>
+                          {isGroupExpanded(group.wilaya) && group.rates.map((rate) => (
+                            <tr key={rate._id} id={`group-${group.wilaya}`}>
+                              <td>
+                                <button
+                                  type="button"
+                                  className="link-like"
+                                  onClick={() => setRateFilters(prev => ({ ...prev, wilaya: rate.wilaya }))}
+                                >
+                                  {rate.wilaya}
+                                </button>
+                              </td>
+                              <td>{rate.commune}</td>
+                              <td>
+                                <span className={`delivery-type ${rate.deliveryType}`}>
+                                  {rate.deliveryType === 'home' ? 'Home Delivery' : 'Pickup Point'}
+                                </span>
+                              </td>
+                              <td>{rate.fee} DA</td>
+                              <td>
+                                <div className="action-buttons">
+                                  <button
+                                    onClick={() => handleEditRate(rate)}
+                                    className="edit-btn"
+                                    disabled={loading}
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteRate(rate._id)}
+                                    className="delete-btn"
+                                    disabled={loading}
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </React.Fragment>
                       ))
                     )}
                   </tbody>

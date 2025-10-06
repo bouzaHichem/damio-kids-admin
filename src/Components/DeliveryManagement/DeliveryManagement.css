@@ -424,3 +424,36 @@
 .link-like:hover {
   color: #0056b3;
 }
+
+/* Grouped table styling */
+.group-controls {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0 12px;
+}
+
+.group-row {
+  background: #f1f3f5;
+}
+
+.group-row-cell {
+  font-weight: 600;
+  color: #343a40;
+}
+
+.group-toggle {
+  margin-right: 8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.group-title {
+  margin-right: 8px;
+}
+
+.group-count {
+  color: #6c757d;
+  font-weight: 500;
+}
